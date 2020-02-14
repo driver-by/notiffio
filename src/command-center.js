@@ -12,13 +12,10 @@ class CommandCenter {
             return;
         }
         const command = this._splitCommand(this.COMMAND_PREFIX, msg.content);
-        switch (command.main) {
-            case 'ping':
-                commands.ping(command, msg, this._dataStorage);
-                break;
-            case 'notify':
-                commands.notify(command, msg, this._dataStorage);
-                break;
+        if (commands[command.main]) {
+            commands[command.main](command, msg, this._dataStorage);
+        } else {
+            msg.channel.send(`Command ${command.main} not found`);
         }
     }
 
