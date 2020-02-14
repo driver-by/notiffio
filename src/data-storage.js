@@ -13,37 +13,46 @@ class DataStorage {
         this._init();
     }
 
+    getSubscriptionName(service, channel) {
+        return service + this.SUBSCRIPTION_NAME_DELIMITER + channel;
+    }
+
     serverGet(serverId) {
         const result = this._serverGet(serverId);
 
-        return result ?
-            {
-                ...result,
-                subscriptions: result.subscriptions ?
-                    result.subscriptions.map(this._getServiceChannel.bind(this)) :
-                    result.subscriptions,
-            } :
-            result;
+        return result;
+    }
+
+    subscriptionsGetByLastCheck(lastCheck) {
+        return this._db.get('subscriptions')
+            .filter(subscription => subscription.lastCheck < lastCheck)
+            .value();
     }
 
     subscriptionGet(service, channel) {
         return this._db.get('subscriptions')
-            .find({name: this._getSubscriptionName(service, channel)})
-            .cloneDeep()
-            .value();
+            .find({name: this.getSubscriptionName(service, channel)});
     }
 
-    subscriptionAdd(serverId, service, channel) {
+    subscriptionAdd(serverId, channelId, channelName, service, channel) {
         this._initTable('servers');
         this._initTable('subscriptions');
         const server = this._serverGet(serverId);
-        const subscription = this.subscriptionGet(service, channel);
-        const subscriptionName = this._getSubscriptionName(service, channel);
+        const subscription = this.subscriptionGet(service, channel).value();
+        const subscriptionName = this.getSubscriptionName(service, channel);
+        const subscriptionToServer = {
+            name: subscriptionName,
+            channelId,
+            channelName,
+        };
 
         if (server) {
             server.subscriptions = server.subscriptions || [];
-            if (server.subscriptions.indexOf(subscriptionName) === -1) {
-                server.subscriptions.push(subscriptionName);
+            const index = server.subscriptions.findIndex(subscription => {
+                return subscription.name === subscriptionName && subscription.channelId === channelId;
+            });
+            if (index === -1) {
+                server.subscriptions.push(subscriptionToServer);
                 this._db.get('servers')
                     .find({id: serverId})
                     .assign(server)
@@ -51,13 +60,13 @@ class DataStorage {
             }
         } else {
             this._db.get('servers')
-                .push({id: serverId, subscriptions: [subscriptionName]})
+                .push({id: serverId, subscriptions: [subscriptionToServer]})
                 .write();
         }
         if (subscription) {
             subscription.servers = subscription.servers || [];
-            if (subscription.servers.findIndex(serverId) === -1) {
-                subscription.servers.push(serverId);
+            if (subscription.servers.findIndex(server => server.serverId === serverId) === -1) {
+                subscription.servers.push({serverId, channelId});
                 this._db.get('subscriptions')
                     .find({name: subscriptionName})
                     .assign(subscription)
@@ -65,21 +74,31 @@ class DataStorage {
             }
         } else {
             this._db.get('subscriptions')
-                .push({name: subscriptionName, servers: [serverId], status: null, statusTimestamp: null})
+                .push({
+                    name: subscriptionName,
+                    service,
+                    channel,
+                    servers: [{serverId, channelId}],
+                    status: null,
+                    statusTimestamp: null,
+                    statusChangeTimestamp: null,
+                    lastCheck: null,
+                    lastInfo: null,
+                })
                 .write();
         }
     }
 
-    subscriptionRemove(serverId, service, channel) {
+    subscriptionRemove(serverId, channelId, serviceName, channel) {
         this._initTable('servers');
         this._initTable('subscriptions');
         const server = this._serverGet(serverId);
-        const subscription = this.subscriptionGet(service, channel);
-        const subscriptionName = this._getSubscriptionName(service, channel);
+        const subscription = this.subscriptionGet(serviceName, channel).value();
+        const subscriptionName = this.getSubscriptionName(serviceName, channel);
 
         if (server && server.subscriptions) {
-            server.subscriptions = server.subscriptions.filter(value => {
-                return value !== subscriptionName;
+            server.subscriptions = server.subscriptions.filter(subscription => {
+                return subscription.name !== subscriptionName || subscription.channelId !== channelId;
             });
             this._db.get('servers')
                 .find({id: serverId})
@@ -87,15 +106,17 @@ class DataStorage {
                 .write();
         }
         if (subscription && subscription.servers) {
-            subscription.servers = subscription.servers.filter(value => value !== serverId);
+            subscription.servers = subscription.servers.filter(subscription => {
+                return subscription.serverId !== serverId && subscription.channelId !== channelId;
+            });
             if (subscription.servers.length) {
                 this._db.get('subscriptions')
-                    .find({name: subscriptionName})
+                    .find({name: subscriptionName, channelId})
                     .assign(subscription)
                     .write();
             } else {
                 this._db.get('subscriptions')
-                    .remove({name: subscriptionName})
+                    .remove({name: this.getSubscriptionName(serviceName, channel)})
                     .write();
             }
         }
@@ -107,21 +128,35 @@ class DataStorage {
                 return Object.assign(
                     {},
                     subscription,
-                    this._getServiceChannel(subscription.name),
                     {name: undefined},
                 );
             })
             .value();
     }
 
-    lastCheckGet() {
-        return this._db.get(`lastCheck`)
+    lastCheckGet(service, channel) {
+        return this._db.get(`subscriptions`)
+            .find({name: this.getSubscriptionName(service, channel)})
+            .map('lastCheck')
             .value();
     }
 
-    lastCheckSet(value) {
-        return this._db.set(`lastCheck`, value)
+    lastCheckSet(service, channel, value) {
+        return this._db.get(`subscriptions`)
+            .find({name: this.getSubscriptionName(service, channel)})
+            .assign({lastCheck: value})
             .write();
+    }
+
+    isSubscribed(serverId, channelId, subscriptionName) {
+        const server = this._serverGet(serverId);
+        if (server && server.subscriptions) {
+            const index = server.subscriptions.findIndex(subscription => {
+                return subscription.name === subscriptionName && subscription.channelId === channelId;
+            });
+            return index !== -1;
+        }
+        return false;
     }
 
     _init() {
@@ -133,10 +168,6 @@ class DataStorage {
             this._db.set(name, [])
                 .write();
         }
-    }
-
-    _getSubscriptionName(service, channel) {
-        return service + this.SUBSCRIPTION_NAME_DELIMITER + channel;
     }
 
     _getServiceChannel(name) {
