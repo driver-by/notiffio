@@ -15,7 +15,8 @@
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
     "request": "^2.88.0",
-    "request-promise-native": "^1.0.8"
+    "request-promise-native": "^1.0.8",
+    "winston": "^3.2.1"
   },
   "devDependencies": {
     "nodemon": "^1.18.10"
