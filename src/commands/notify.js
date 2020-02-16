@@ -1,13 +1,11 @@
-const GoodgameService = require('../services/goodgame');
+const {GOODGAME_SERVICE_NAME, GoodgameService} = require('../services/goodgame');
 
 const process = function(command, msg, dataStorage) {
     switch (command.params[0]) {
         case 'list':
-            processList(command, msg, dataStorage);
-            break;
+            return processList(command, msg, dataStorage);
         default:
-            processSubscribe(command, msg, dataStorage);
-            break;
+            return processSubscribe(command, msg, dataStorage);
     }
 };
 
@@ -29,6 +27,8 @@ function processList(command, msg, dataStorage) {
         text = 'Нет оповещений';
     }
     msg.channel.send(text);
+
+    return text;
 }
 
 function processSubscribe(command, msg, dataStorage) {
@@ -36,20 +36,24 @@ function processSubscribe(command, msg, dataStorage) {
     const channelId = msg.channel.id;
     const channelName = msg.channel.name;
     const subscribeTo = getServiceInfo(command.params[0]);
+    let text;
     if (subscribeTo && subscribeTo.channel) {
         const subscriptionName = dataStorage.getSubscriptionName(subscribeTo.service, subscribeTo.channel);
         const isSubscribed = dataStorage.isSubscribed(serverId, channelId, subscriptionName);
         if (isSubscribed) {
             dataStorage.subscriptionRemove(serverId, channelId, subscribeTo.service, subscribeTo.channel);
-            msg.channel.send(`Отписались от канала ${subscribeTo.channel} (${subscribeTo.service}).`);
+            text = `Отписались от канала ${subscribeTo.channel} (${subscribeTo.service}).`;
         } else {
             dataStorage.subscriptionAdd(serverId, channelId, channelName, subscribeTo.service, subscribeTo.channel);
-            msg.channel.send(`Успешно подписались на канал ${subscribeTo.channel} (${subscribeTo.service}).` +
-              ` Вы получите оповещение, когда стрим начнется`);
+            text = `Успешно подписались на канал ${subscribeTo.channel} (${subscribeTo.service}).` +
+              ` Вы получите оповещение, когда стрим начнется`;
         }
     } else {
-        msg.channel.send(`Неправильный формат или вебсайт. Попробуй \`!notify {URL канала}\` (Поддерживаемые вебсайты: goodgame.ru)`);
+        text = `Неправильный формат или вебсайт. Попробуйте \`!notify {URL канала}\` (Поддерживаемые вебсайты: goodgame.ru)`;
     }
+    msg.channel.send(text);
+
+    return text;
 }
 
 function getServiceInfo(url) {
@@ -64,7 +68,7 @@ function getServiceInfo(url) {
     const [m, service, param1, param2] = match;
     let channel;
     switch (service) {
-        case GoodgameService.name:
+        case 'goodgame.ru':
             channel = param2;
             break;
     }

@@ -3,8 +3,6 @@ const ChannelDetails = require('../models/channel-details');
 const request = require('request-promise-native');
 
 class GoodgameService extends AbstractService {
-    static name = 'goodgame.ru';
-
     static getChannelStatuses(channels) {
         return request({
             uri: `https://goodgame.ru/api/getggchannelstatus?id=${channels.join(',')}&fmt=json`,
@@ -35,4 +33,4 @@ class GoodgameService extends AbstractService {
     }
 }
 
-module.exports = GoodgameService;
+module.exports = {name: 'goodgame.ru', service: GoodgameService};
