@@ -23,7 +23,7 @@ class Bot {
 
     _init() {
         this._dataStorage = new DataStorage(this.DB_FILE);
-        this._servicesByName = this._getMapByName(services);
+        this._servicesByName = this._getMapServiceByName(services);
         this._interval =  setInterval(this._updateSubscriptions.bind(this), this.INTERVAL);
         this._commandCenter = new CommandCenter(this._dataStorage);
         this._client = new discord.Client();
@@ -42,10 +42,10 @@ class Bot {
         });
     }
 
-    _getMapByName(map) {
+    _getMapServiceByName(map) {
         let result = {};
         Object.keys(map)
-            .forEach(i => result[map[i].name] = map[i]);
+            .forEach(i => result[map[i].name] = map[i].service);
         return result;
     }
 
@@ -54,7 +54,11 @@ class Bot {
     }
 
     _processCommand(msg) {
-        this._commandCenter.process(msg);
+        const result = this._commandCenter.process(msg);
+        if (result) {
+            this._logger.info(`<${msg.guild.id}/${msg.guild.name}--${msg.channel.id}/${msg.channel.name}` +
+            `Command '${msg.content}' ${result}`);
+        }
     }
 
     _ready() {
