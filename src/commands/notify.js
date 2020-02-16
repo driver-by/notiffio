@@ -13,12 +13,20 @@ const process = function(command, msg, dataStorage) {
 
 function processList(command, msg, dataStorage) {
     const server = dataStorage.serverGet(msg.guild.id);
+    let map = {};
     let text = '';
     if (server && server.subscriptions) {
-        text = server.subscriptions.join(',\n')
+        server.subscriptions.forEach(sub => {
+            map[sub.channelName] = map[sub.channelName] || [];
+            map[sub.channelName].push(sub.name);
+        });
+        Object.keys(map)
+            .forEach(channelName => {
+                text += `#${channelName}\n    ` + map[channelName].join(',\n    ') + '\n';
+            });
     }
     if (!msg) {
-        text = 'Нет нотификаций';
+        text = 'Нет оповещений';
     }
     msg.channel.send(text);
 }

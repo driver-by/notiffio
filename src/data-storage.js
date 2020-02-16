@@ -79,11 +79,11 @@ class DataStorage {
                     service,
                     channel,
                     servers: [{serverId, channelId}],
-                    status: null,
-                    statusTimestamp: null,
                     statusChangeTimestamp: null,
                     lastCheck: null,
                     lastInfo: null,
+                    lastStatus: null,
+                    previousStatus: null,
                 })
                 .write();
         }
@@ -134,17 +134,10 @@ class DataStorage {
             .value();
     }
 
-    lastCheckGet(service, channel) {
-        return this._db.get(`subscriptions`)
-            .find({name: this.getSubscriptionName(service, channel)})
-            .map('lastCheck')
-            .value();
-    }
-
-    lastCheckSet(service, channel, value) {
-        return this._db.get(`subscriptions`)
-            .find({name: this.getSubscriptionName(service, channel)})
-            .assign({lastCheck: value})
+    updateSubscription(subscriptionName, subscription) {
+        this._db.get('subscriptions')
+            .find({name: subscriptionName})
+            .assign(subscription)
             .write();
     }
 
