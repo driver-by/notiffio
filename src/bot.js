@@ -94,8 +94,9 @@ class Bot {
                         // Don't send notification if last check was too long ago (bot was switched off)
                         const skipNotificationAsItIsExpired = now - savedData.lastCheck > this.NOTIFICATION_EXPIRED;
                         if (subscription.status !== savedData.lastStatus) {
+                            const firstCheck = !savedData.lastStatus;
                             let skipStatusChange = false;
-                            if (subscription.status === STATUS_DEAD) {
+                            if (!firstCheck && subscription.status === STATUS_DEAD) {
                                 // Don't set as DEAD within some interval (might be temporary drop)
                                 if (savedData.firstDead) {
                                     if (now - savedData.firstDead < this.NOT_CHANGE_TO_DEAD_WITHIN) {
@@ -111,20 +112,22 @@ class Bot {
                             if (!skipStatusChange) {
                                 savedData.firstDead = null;
                                 savedData.previousStatus = savedData.lastStatus;
-                                savedData.statusChangeTimestamp = now;
                                 savedData.lastStatus = subscription.status;
-                                if (!skipNotificationAsItIsExpired) {
-                                    let msg;
-                                    if (subscription.status === STATUS_LIVE) {
-                                        msg = `@everyone ${savedData.channel} начал стримить *${subscription.game}*!\n`+
-                                            `**${subscription.title}**\n` +
-                                            `Заходите на ${subscription.url}\n` +
-                                            `${subscription.img}`;
-                                    } else {
-                                        msg = `${savedData.channel} закончил стрим`;
+                                if (!firstCheck) {
+                                    savedData.statusChangeTimestamp = now;
+                                    if (!skipNotificationAsItIsExpired) {
+                                        let msg;
+                                        if (subscription.status === STATUS_LIVE) {
+                                            msg = `@everyone ${savedData.channel} начал стримить *${subscription.game}*!\n`+
+                                                `**${subscription.title}**\n` +
+                                                `Заходите на ${subscription.url}\n` +
+                                                `${subscription.img}`;
+                                        } else {
+                                            msg = `${savedData.channel} закончил стрим`;
+                                        }
+                                        this._logger.info(msg);
+                                        this._sendMessageToChannels(savedData.servers, msg);
                                     }
-                                    this._logger.info(msg);
-                                    this._sendMessageToChannels(savedData.servers, msg);
                                 }
                             }
                         }
