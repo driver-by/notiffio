@@ -8,6 +8,7 @@ const DataStorage = require('./data-storage');
 const CommandCenter = require('./command-center');
 const services = require('./services');
 const {STATUS_DEAD, STATUS_LIVE} = require('./models/statuses');
+const { createLogger, format, transports } = require('winston');
 
 class Bot {
 
@@ -16,6 +17,7 @@ class Bot {
         this.INTERVAL = 1000;
         this.UPDATE_INTERVAL = 10000;
         this.NOT_CHANGE_TO_DEAD_WITHIN = 60 * 1000;
+        this.NOTIFICATION_EXPIRED = 10 * 60 * 1000;
         this._init();
     }
 
@@ -29,6 +31,14 @@ class Bot {
         this._client.on('message', this._message.bind(this));
         this._client.login(SECRET_KEY).then(() => {
             this._updateSubscriptions();
+        });
+        this._logger = createLogger({
+            level: 'info',
+            transports: [
+                new transports.Console(),
+                new transports.File({ filename: 'logs/error.log', level: 'error' }),
+                new transports.File({ filename: 'logs/full.log' })
+            ]
         });
     }
 
@@ -48,7 +58,7 @@ class Bot {
     }
 
     _ready() {
-        console.log(`Logged in as ${this._client.user.tag}!`);
+        this._logger.info(`Logged in as ${this._client.user.tag}!`);
     }
 
     async _updateSubscriptions() {
@@ -72,12 +82,13 @@ class Bot {
                     ));
                 });
             await Promise.all(promises).then(result => {
-                // TODO search in result by name, could be missed if wrong channel name
                 services.forEach((service, i) => {
                     result[i].forEach((subscription, j) => {
                         const subscriptionName = this._dataStorage.getSubscriptionName(service, subscription.name);
                         const savedData = Object.assign({}, subscriptionsByName[subscriptionName]);
                         const now = Date.now();
+                        // Don't send notification if last check was too long ago (bot was switched off)
+                        const skipNotificationAsItIsExpired = now - savedData.lastCheck > this.NOTIFICATION_EXPIRED;
                         if (subscription.status !== savedData.lastStatus) {
                             let skipStatusChange = false;
                             if (subscription.status === STATUS_DEAD) {
@@ -98,17 +109,19 @@ class Bot {
                                 savedData.previousStatus = savedData.lastStatus;
                                 savedData.statusChangeTimestamp = now;
                                 savedData.lastStatus = subscription.status;
-                                let msg;
-                                if (subscription.status === STATUS_LIVE) {
-                                    msg = `@everyone ${savedData.channel} начал стримить *${subscription.game}*!\n`+
-                                        `**${subscription.title}**\n` +
-                                        `Заходите на ${subscription.url}\n` +
-                                        `${subscription.img}`;
-                                } else {
-                                    msg = `${savedData.channel} закончил стрим`;
+                                if (!skipNotificationAsItIsExpired) {
+                                    let msg;
+                                    if (subscription.status === STATUS_LIVE) {
+                                        msg = `@everyone ${savedData.channel} начал стримить *${subscription.game}*!\n`+
+                                            `**${subscription.title}**\n` +
+                                            `Заходите на ${subscription.url}\n` +
+                                            `${subscription.img}`;
+                                    } else {
+                                        msg = `${savedData.channel} закончил стрим`;
+                                    }
+                                    this._logger.info(msg);
+                                    this._sendMessageToChannels(savedData.servers, msg);
                                 }
-                                console.log(msg);
-                                this._sendMessageToChannels(savedData.servers, msg);
                             }
                         }
                         savedData.lastCheck = now;
@@ -116,6 +129,8 @@ class Bot {
                         this._dataStorage.updateSubscription(savedData.name, savedData)
                     });
                 });
+            }, error => {
+                this._logger.error(`getChannelStatuses error`, error);
             });
         }
     }
@@ -125,13 +140,13 @@ class Bot {
             const s = this._client.guilds
                 .get(server.serverId);
             if (!s) {
-                console.warn('Server not found! ' + server.serverId);
+                this._logger.warn(`Server not found! %s`, server.serverId);
                 return;
             }
             const channel = s.channels
                 .get(server.channelId);
             if (!channel) {
-                console.warn('Channel not found! ' + server.channelId);
+                this._logger.warn(`Channel not found! %s`, server.channelId);
                 return;
             }
             channel.send(msg);
