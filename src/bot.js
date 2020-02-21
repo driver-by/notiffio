@@ -27,7 +27,7 @@ class Bot {
         this._interval =  setInterval(this._updateSubscriptions.bind(this), this.INTERVAL);
         this._commandCenter = new CommandCenter(this._dataStorage);
         this._client = new discord.Client();
-        this._client.once('ready', this._ready.bind(this));
+        this._client.on('ready', this._ready.bind(this));
         this._client.on('message', this._message.bind(this));
         this._client.login(SECRET_KEY).then(() => {
             this._updateSubscriptions();
