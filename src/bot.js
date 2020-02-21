@@ -119,8 +119,9 @@ class Bot {
                                     if (!skipNotificationAsItIsExpired) {
                                         let msg;
                                         if (subscription.status === STATUS_LIVE) {
-                                            msg = `@everyone ${savedData.channel} начал стримить *${subscription.game}*!\n`+
-                                                `**${subscription.title}**\n` +
+                                            msg = `@everyone ${savedData.channel} начал стримить\n` +
+                                                `**${subscription.title.trim()}**\n` +
+                                                `*${subscription.game.trim()}*!\n`+
                                                 `Заходите на ${subscription.url}\n` +
                                                 `${subscription.img}`;
                                         } else {
