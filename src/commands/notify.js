@@ -4,6 +4,8 @@ const process = function(command, msg, dataStorage) {
     switch (command.params[0]) {
         case 'list':
             return processList(command, msg, dataStorage);
+        case 'remove':
+            return processRemove(command, msg, dataStorage);
         default:
             return processSubscribe(command, msg, dataStorage);
     }
@@ -26,6 +28,31 @@ function processList(command, msg, dataStorage) {
     if (!msg) {
         text = 'Нет оповещений';
     }
+    msg.channel.send(text);
+
+    return text;
+}
+
+function processRemove(command, msg, dataStorage) {
+    const serverId = msg.guild.id;
+    const channelId = msg.channel.id;
+    const channelName = msg.channel.name;
+    let text;
+
+    switch (command.params[1]) {
+        case 'all':
+            text = `Удалены все оповещения со всех каналов на сервере`;
+            dataStorage.subscriptionRemoveList(serverId);
+            break;
+        case 'channel':
+            text = `Удалены все оповещения с текущего канала #${channelName}`;
+            dataStorage.subscriptionRemoveList(serverId, channelId);
+            break;
+        default:
+            text = `Удалены все оповещения с текущего канала #${channelName}`;
+            dataStorage.subscriptionRemoveList(serverId, channelId);
+    }
+
     msg.channel.send(text);
 
     return text;
