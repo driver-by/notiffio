@@ -20,7 +20,7 @@ class CommandCenter {
     }
 
     _splitCommand(prefix, msg) {
-        const arr = msg.split(' ');
+        const arr = msg.split(/\s+/);
         let result = {
             main: arr[0],
             params: arr.slice(1, arr.length),
