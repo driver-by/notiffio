@@ -96,7 +96,8 @@ class Bot {
                         if (subscription.status !== savedData.lastStatus) {
                             const firstCheck = !savedData.lastStatus;
                             let skipStatusChange = false;
-                            if (!firstCheck && subscription.status === STATUS_DEAD) {
+                            if (!firstCheck && subscription.status === STATUS_DEAD &&
+                                    !skipNotificationAsItIsExpired) {
                                 // Don't set as DEAD within some interval (might be temporary drop)
                                 if (savedData.firstDead) {
                                     if (now - savedData.firstDead < this.NOT_CHANGE_TO_DEAD_WITHIN) {
