@@ -4,7 +4,7 @@ const commands = require('./commands');
 class CommandCenter {
     constructor(dataStorage) {
         this._dataStorage = dataStorage;
-        this.COMMAND_PREFIX = '!';
+        this.COMMAND_PREFIX = '!notify ';
     }
 
     process(msg) {
@@ -15,12 +15,13 @@ class CommandCenter {
         if (commands[command.main]) {
             commands[command.main](command, msg, this._dataStorage);
         } else {
-            msg.channel.send(`Command ${command.main} not found`);
+            commands.default(command, msg, this._dataStorage);
         }
     }
 
     _splitCommand(prefix, msg) {
-        const arr = msg.split(/\s+/);
+        const reg = new RegExp(`^${prefix}`, 'gi');
+        const arr = msg.replace(reg, '').split(/\s+/);
         let result = {
             main: arr[0],
             params: arr.slice(1, arr.length),

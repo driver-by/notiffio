@@ -1,2 +1,2 @@
 exports.ping = require('./ping');
-exports.notify = require('./notify');
+exports.default = require('./default');
