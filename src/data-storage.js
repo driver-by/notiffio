@@ -111,7 +111,7 @@ class DataStorage {
             });
             if (subscription.servers.length) {
                 this._db.get('subscriptions')
-                    .find({name: subscriptionName, channelId})
+                    .find({name: subscriptionName})
                     .assign(subscription)
                     .write();
             } else {
@@ -120,6 +120,55 @@ class DataStorage {
                     .write();
             }
         }
+    }
+
+    subscriptionRemoveList(serverId, channelId) {
+        const server = this._serverGet(serverId);
+        let removeSubscriptions = null;
+
+        if (!server || !server.subscriptions) {
+            return;
+        }
+        if (channelId) {
+            // Remove everything from channel
+            removeSubscriptions = server.subscriptions.filter(sub => sub.channelId === channelId);
+            server.subscriptions = server.subscriptions.filter(sub => sub.channelId !== channelId);
+        } else {
+            // Remove everything from server
+            removeSubscriptions = server.subscriptions;
+            server.subscriptions = [];
+        }
+        this._db.get('servers')
+            .find({id: serverId})
+            .assign(server)
+            .write();
+
+        // Remove server/channel from subscriptions table
+        if (!removeSubscriptions || !removeSubscriptions.length) {
+            return;
+        }
+        removeSubscriptions.forEach(removingSubscription => {
+            const subDb = this._db.get('subscriptions')
+                .find({name: removingSubscription.name});
+            let sub = subDb.value();
+
+            if (!sub || !sub.servers || !sub.servers.length) {
+                return;
+            }
+            if (channelId) {
+                sub.servers = sub.servers.filter(server => server.channelId !== channelId || !server.serverId === serverId);
+            } else {
+                sub.servers = sub.servers.filter(server => server.serverId !== serverId);
+            }
+            if (sub.servers.length) {
+                subDb.assign(sub)
+                    .write();
+            } else {
+                this._db.get('subscriptions')
+                    .remove({name: removingSubscription.name})
+                    .write();
+            }
+        });
     }
 
     subscriptionsGet() {
