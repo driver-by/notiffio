@@ -25,7 +25,7 @@ function processList(command, msg, dataStorage) {
                 text += `#${channelName}\n    ` + map[channelName].join(',\n    ') + '\n';
             });
     }
-    if (!msg) {
+    if (!text) {
         text = 'Нет оповещений';
     }
     msg.channel.send(text);
