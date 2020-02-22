@@ -25,12 +25,7 @@ class CommandCenter {
         let result = {
             main: arr[0],
             params: arr.slice(1, arr.length),
-            prefix: false,
         };
-        if (result.main.startsWith(prefix)) {
-            result.main = result.main.slice(prefix.length);
-            result.prefix = true;
-        }
 
         return result;
     }
