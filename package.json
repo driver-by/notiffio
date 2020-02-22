@@ -11,14 +11,14 @@
   "author": "Sergei Tomin",
   "license": "MIT",
   "dependencies": {
-    "discord.js": "^11.4.2",
+    "discord.js": "^11.5.1",
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
-    "request": "^2.88.0",
+    "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "nodemon": "^1.18.10"
+    "nodemon": "^1.19.4"
   }
 }
