@@ -1,11 +1,11 @@
-##Notiffio
+## Notiffio
 
 Discord bot, sending notifications to selected channels on different events, using [discord.js](https://github.com/discordjs). Currently supports:
 - goodgame.ru stream start/stop
 
-###Start to use bot
+### Start to use bot
 
-#####Add to your server with [a link](https://discordapp.com/oauth2/authorize?&client_id=552560239304507403&scope=bot&permissions=256064)
+##### Add to your server with [a link](https://discordapp.com/oauth2/authorize?&client_id=552560239304507403&scope=bot&permissions=256064)
 
 Use commands to start:
 - **!notify help** - show help
@@ -15,7 +15,7 @@ Use commands to start:
 - **!notify remove all** - remove all notifications from entire server
 - **!notify leave** - kick bot out of a server
 
-###Self-host this bot
+### Self-host this bot
 
 - Register you bot on [discord developers portal](https://discordapp.com/developers/applications)
 - Download source code
