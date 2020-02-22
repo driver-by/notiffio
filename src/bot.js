@@ -81,12 +81,14 @@ class Bot {
             let promises = [];
             const services = Object.keys(subscriptionsByService);
             services.forEach(service => {
-                    promises.push(this._servicesByName[service].getChannelStatuses(
-                        subscriptionsByService[service].map(sub => sub.channel),
-                    ));
-                });
+                promises.push(this._servicesByName[service].getChannelStatuses(
+                    subscriptionsByService[service].map(sub => sub.channel),
+                ));
+            });
             await Promise.all(promises).then(result => {
                 services.forEach((service, i) => {
+                    const notFoundChannels = this._getNotFound(subscriptionsByService[service], result[i]);
+                    this._removeNotFound(notFoundChannels);
                     result[i].forEach((subscription, j) => {
                         const subscriptionName = this._dataStorage.getSubscriptionName(service, subscription.name);
                         const savedData = Object.assign({}, subscriptionsByName[subscriptionName]);
@@ -142,6 +144,28 @@ class Bot {
                 this._logger.error(`getChannelStatuses error`, error);
             });
         }
+    }
+
+    _getNotFound(channelsToBeFound, channels) {
+        const channelsNames = channels.map(c => c.name);
+        return channelsToBeFound.filter(c => channelsNames.indexOf(c.channel) === -1);
+    }
+
+    _removeNotFound(channels) {
+        if (!channels) {
+            return;
+        }
+        channels.forEach(channel => {
+            this._sendMessageToChannels(channel.servers, `Канал ${channel.channel} не найден`);
+            channel.servers.forEach(server => {
+                this._dataStorage.subscriptionRemove(
+                    server.serverId,
+                    server.channelId,
+                    channel.service,
+                    channel.channel,
+                );
+            });
+        });
     }
 
     _sendMessageToChannels(servers, msg) {

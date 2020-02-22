@@ -19,6 +19,9 @@ class GoodgameService extends AbstractService {
             let result = [];
             // Flatten array and combine objects inside
             response = Array.prototype.concat.apply([], response);
+            if (!response || !response.length) {
+                return result;
+            }
             response = Object.assign.apply({}, response);
             Object.keys(response)
                 .forEach(i => {
