@@ -14,8 +14,8 @@ class Bot {
 
     constructor() {
         this.DB_FILE = 'db.json';
-        this.INTERVAL = 1000;
-        this.UPDATE_INTERVAL = 10000;
+        this.INTERVAL = 5000;
+        this.UPDATE_INTERVAL = 20000;
         this.NOT_CHANGE_TO_DEAD_WITHIN = 60 * 1000;
         this.NOTIFICATION_EXPIRED = 10 * 60 * 1000;
         this._init();
