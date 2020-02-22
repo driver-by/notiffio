@@ -1,7 +1,7 @@
 const {GOODGAME_SERVICE_NAME, GoodgameService} = require('../services/goodgame');
 
 const process = function(command, msg, dataStorage) {
-    switch (command.params[0]) {
+    switch (command.main) {
         case 'list':
             return processList(command, msg, dataStorage);
         case 'remove':
@@ -39,7 +39,7 @@ function processRemove(command, msg, dataStorage) {
     const channelName = msg.channel.name;
     let text;
 
-    switch (command.params[1]) {
+    switch (command.params[0]) {
         case 'all':
             text = `Удалены все оповещения со всех каналов на сервере`;
             dataStorage.subscriptionRemoveList(serverId);
@@ -62,7 +62,7 @@ function processSubscribe(command, msg, dataStorage) {
     const serverId = msg.guild.id;
     const channelId = msg.channel.id;
     const channelName = msg.channel.name;
-    const subscribeTo = getServiceInfo(command.params[0]);
+    const subscribeTo = getServiceInfo(command.main);
     let text;
     if (subscribeTo && subscribeTo.channel) {
         const subscriptionName = dataStorage.getSubscriptionName(subscribeTo.service, subscribeTo.channel);
