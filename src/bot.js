@@ -121,13 +121,13 @@ class Bot {
                                     if (!skipNotificationAsItIsExpired) {
                                         let msg;
                                         if (subscription.status === STATUS_LIVE) {
-                                            msg = `@everyone ${savedData.channel} начал стримить\n` +
+                                            msg = `@everyone Стрим ${savedData.channel} начался!\n` +
                                                 `**${subscription.title.trim()}**\n` +
-                                                `*${subscription.game.trim()}*!\n`+
+                                                `*${subscription.game.trim()}*\n`+
                                                 `Заходите на ${subscription.url}\n` +
                                                 `${subscription.img}`;
                                         } else {
-                                            msg = `${savedData.channel} закончил стрим`;
+                                            msg = `Стрим ${savedData.channel} закончился`;
                                         }
                                         this._logger.info(msg);
                                         this._sendMessageToChannels(savedData.servers, msg);
