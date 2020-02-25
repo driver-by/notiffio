@@ -1,6 +1,6 @@
 const AbstractService = require('./abstract-service');
 const ChannelDetails = require('../models/channel-details');
-const request = require('request-promise-native');
+const axios = require('axios');
 
 const MAX_CHANNELS_PER_REQUEST = 50;
 
@@ -10,15 +10,14 @@ class GoodgameService extends AbstractService {
 
         for (let i = 0; i < channels.length; i += MAX_CHANNELS_PER_REQUEST) {
             const channelsPart = channels.slice(i, i + MAX_CHANNELS_PER_REQUEST);
-            promises.push(request({
-                uri: `https://goodgame.ru/api/getggchannelstatus?id=${channelsPart.join(',')}&fmt=json`,
-                json: true,
-            }));
+            promises.push(
+                axios.get(`https://goodgame.ru/api/getggchannelstatus?id=${channelsPart.join(',')}&fmt=json`)
+            );
         }
         return Promise.all(promises).then(response => {
             let result = [];
             // Flatten array and combine objects inside
-            response = Array.prototype.concat.apply([], response);
+            response = Array.prototype.concat.apply([], response.map(r => r.data));
             if (!response || !response.length) {
                 return result;
             }

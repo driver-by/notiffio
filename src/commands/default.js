@@ -1,5 +1,4 @@
-const {GOODGAME_SERVICE_NAME, GoodgameService} = require('../services/goodgame');
-const request = require('request-promise-native');
+const axios = require('axios');
 const logger = require('../logger').getLogger();
 
 const process = function(command, msg, dataStorage) {
@@ -115,16 +114,16 @@ function getServiceInfo(url) {
 }
 
 async function getChannelInfo(url) {
-    return request({
-        uri: url,
-        json: true,
-    }).then(response => {
+    return axios.get(url).then(response => {
         // Only goodgame.ru case
         // Find nickname
+        if (!response.data) {
+            logger.error(`getChannelInfo empty response, url: ${url}`);
+        }
         let result = {};
-        let match = response.match(/"streamer":\s?"([^"]+)"/i);
+        let match = response.data.match(/"streamer":\s?"([^"]+)"/i);
         if (!match || !match[1]) {
-            match = response.match(/"streamer_name":\s?"([^"]+)"/i);
+            match = response.data.match(/"streamer_name":\s?"([^"]+)"/i);
         }
         if (match && match[1]) {
             const nickname = match[1].trim();
@@ -136,7 +135,7 @@ async function getChannelInfo(url) {
 
         return result;
     },
-    error => logger.error(`getChannelInfo error`, error)
+    error => logger.error(`getChannelInfo error: `, error.toJSON())
     );
 }
 
