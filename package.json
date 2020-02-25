@@ -11,11 +11,10 @@
   "author": "Sergei Tomin",
   "license": "MIT",
   "dependencies": {
+    "axios": "^0.19.2",
     "discord.js": "^11.5.1",
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
-    "request": "^2.88.2",
-    "request-promise-native": "^1.0.8",
     "winston": "^3.2.1"
   },
   "devDependencies": {
