@@ -1,5 +1,6 @@
 const {GOODGAME_SERVICE_NAME, GoodgameService} = require('../services/goodgame');
 const request = require('request-promise-native');
+const logger = require('../logger').getLogger();
 
 const process = function(command, msg, dataStorage) {
     switch (command.main) {
@@ -136,7 +137,9 @@ async function getChannelInfo(url) {
         }
 
         return result;
-    });
+    },
+        error => logger.error(`getChannelInfo error`, error)
+    );
 }
 
 module.exports = process;
