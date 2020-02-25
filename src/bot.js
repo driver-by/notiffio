@@ -120,14 +120,15 @@ class Bot {
                                     savedData.statusChangeTimestamp = now;
                                     if (!skipNotificationAsItIsExpired) {
                                         let msg;
+                                        const nickname = savedData.channelInfo ? savedData.channelInfo.nickname : savedData.channel;
                                         if (subscription.status === STATUS_LIVE) {
-                                            msg = `@everyone Стрим ${savedData.channel} начался!\n` +
+                                            msg = `@everyone Стрим начался на канале **${nickname}**!\n` +
                                                 `**${subscription.title.trim()}**\n` +
                                                 `*${subscription.game.trim()}*\n`+
                                                 `Заходите на ${subscription.url}\n` +
                                                 `${subscription.img}`;
                                         } else {
-                                            msg = `Стрим ${savedData.channel} закончился`;
+                                            msg = `Стрим закончился на канале ${nickname}`;
                                         }
                                         this._logger.info(msg);
                                         this._sendMessageToChannels(savedData.servers, msg);
