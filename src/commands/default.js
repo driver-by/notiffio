@@ -1,4 +1,5 @@
 const {GOODGAME_SERVICE_NAME, GoodgameService} = require('../services/goodgame');
+const request = require('request-promise-native');
 
 const process = function(command, msg, dataStorage) {
     switch (command.main) {
@@ -71,6 +72,12 @@ function processSubscribe(command, msg, dataStorage) {
             dataStorage.subscriptionRemove(serverId, channelId, subscribeTo.service, subscribeTo.channel);
             text = `Отписались от канала ${subscribeTo.channel} (${subscribeTo.service}).`;
         } else {
+            getChannelInfo(command.main).then(channelInfo => {
+                dataStorage.updateSubscription(
+                    dataStorage.getSubscriptionName(subscribeTo.service, subscribeTo.channel),
+                    {channelInfo},
+                );
+            });
             dataStorage.subscriptionAdd(serverId, channelId, channelName, subscribeTo.service, subscribeTo.channel);
             text = `Успешно подписались на канал ${subscribeTo.channel} (${subscribeTo.service}).` +
               ` Вы получите оповещение, когда стрим начнется`;
@@ -104,6 +111,32 @@ function getServiceInfo(url) {
     }
 
     return {service, channel};
+}
+
+async function getChannelInfo(url) {
+    return request({
+        uri: url,
+        json: true,
+    }).then(response => {
+        // Only goodgame.ru case
+        // Find nickname
+        let result = {};
+        let match = response.matchAll(/"streamer":\s?"([^"]+)"/gi);
+        match = Array.from(match);
+        if (!match || !match[0]) {
+            match = response.matchAll(/"streamer_name":\s?"([^"]+)"/gi);
+            match = Array.from(match);
+        }
+        if (match[0] && match[0][1]) {
+            const nickname = match[0][1].trim();
+            if (nickname.length < 128) {
+                // Seems ok
+                result.nickname = nickname;
+            }
+        }
+
+        return result;
+    });
 }
 
 module.exports = process;
