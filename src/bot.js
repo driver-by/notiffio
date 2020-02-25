@@ -8,7 +8,7 @@ const DataStorage = require('./data-storage');
 const CommandCenter = require('./command-center');
 const services = require('./services');
 const {STATUS_DEAD, STATUS_LIVE} = require('./models/statuses');
-const { createLogger, format, transports } = require('winston');
+const {getLogger} = require('./logger');
 
 class Bot {
 
@@ -32,14 +32,7 @@ class Bot {
         this._client.login(SECRET_KEY).then(() => {
             this._updateSubscriptions();
         });
-        this._logger = createLogger({
-            level: 'info',
-            transports: [
-                new transports.Console(),
-                new transports.File({ filename: 'logs/error.log', level: 'error' }),
-                new transports.File({ filename: 'logs/full.log' })
-            ]
-        });
+        this._logger = getLogger();
     }
 
     _getMapServiceByName(map) {
