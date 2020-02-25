@@ -122,14 +122,12 @@ async function getChannelInfo(url) {
         // Only goodgame.ru case
         // Find nickname
         let result = {};
-        let match = response.matchAll(/"streamer":\s?"([^"]+)"/gi);
-        match = Array.from(match);
-        if (!match || !match[0]) {
-            match = response.matchAll(/"streamer_name":\s?"([^"]+)"/gi);
-            match = Array.from(match);
+        let match = response.match(/"streamer":\s?"([^"]+)"/i);
+        if (!match || !match[1]) {
+            match = response.match(/"streamer_name":\s?"([^"]+)"/i);
         }
-        if (match[0] && match[0][1]) {
-            const nickname = match[0][1].trim();
+        if (match && match[1]) {
+            const nickname = match[1].trim();
             if (nickname.length < 128) {
                 // Seems ok
                 result.nickname = nickname;
@@ -138,7 +136,7 @@ async function getChannelInfo(url) {
 
         return result;
     },
-        error => logger.error(`getChannelInfo error`, error)
+    error => logger.error(`getChannelInfo error`, error)
     );
 }
 
