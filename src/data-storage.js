@@ -65,7 +65,8 @@ class DataStorage {
         if (server) {
             server.subscriptions = server.subscriptions || [];
             const index = server.subscriptions.findIndex(subscription => {
-                return subscription.name === subscriptionName && subscription.channelId === channelId;
+                return subscription.name.toLowerCase() === subscriptionName.toLowerCase() &&
+                    subscription.channelId === channelId;
             });
             if (index === -1) {
                 server.subscriptions.push(subscriptionToServer);
@@ -114,7 +115,8 @@ class DataStorage {
 
         if (server && server.subscriptions) {
             server.subscriptions = server.subscriptions.filter(subscription => {
-                return subscription.name !== subscriptionName || subscription.channelId !== channelId;
+                return subscription.name.toLowerCase() !== subscriptionName.toLowerCase() ||
+                    subscription.channelId !== channelId;
             });
             this._db.get('servers')
                 .find({id: serverId})
@@ -210,7 +212,8 @@ class DataStorage {
         const server = this._serverGet(serverId);
         if (server && server.subscriptions) {
             const index = server.subscriptions.findIndex(subscription => {
-                return subscription.name === subscriptionName && subscription.channelId === channelId;
+                return subscription.name.toLowerCase() === subscriptionName.toLowerCase() &&
+                    subscription.channelId === channelId;
             });
             return index !== -1;
         }
