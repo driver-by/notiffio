@@ -1,7 +1,6 @@
 const process = function(command, msg, dataStorage) {
     const serverId = msg.guild.id;
-    const channelId = msg.channel.id;
-    dataStorage.subscriptionRemoveList(serverId, channelId);
+    dataStorage.serverRemove(serverId);
     msg.channel.send(`Очень жаль расставаться, я буду скучать. Покидаю сервер`);
     msg.guild.leave();
 };

@@ -24,6 +24,12 @@ class Bot {
         this._client = new discord.Client();
         this._client.on('ready', this._ready.bind(this));
         this._client.on('message', this._message.bind(this));
+        this._client.on('error', this._error.bind(this));
+        this._client.on('rateLimit', this._rateLimit.bind(this));
+        this._client.on('disconnect', this._disconnect.bind(this));
+        this._client.on('reconnecting', this._reconnecting.bind(this));
+        this._client.on('guildCreate', this._guildCreate.bind(this));
+        this._client.on('guildDelete', this._guildDelete.bind(this));
         this._client.login(SECRET_KEY).then(() => {
             this._services = this._getServices(services);
             this._subscribeToEvents(this._services);
@@ -52,6 +58,32 @@ class Bot {
 
     _ready() {
         this._logger.info(`Logged in as ${this._client.user.tag}!`);
+    }
+
+    _error(error) {
+        this._logger.error(`Discord.js error ${error.toString()}`);
+    }
+
+    _rateLimit(event) {
+        this._logger.error(`Discord.js rate limit error ${event.toString()}`);
+    }
+
+    _disconnect(event) {
+        this._logger.error(`Discord.js disconnect ${event.toString()}`);
+    }
+
+    _reconnecting(event) {
+        this._logger.info(`Discord.js reconnecting ${event.toString()}`);
+    }
+
+    _guildCreate(server) {
+        this._logger.info(`Discord.js guildCreate ${server.name} ${server.id}`);
+        this._dataStorage.serverAdd(server);
+    }
+
+    _guildDelete(server) {
+        this._logger.info(`Discord.js guildDelete ${server.name} ${server.id}`);
+        this._dataStorage.serverRemove(server.id);
     }
 
     _updateSubscriptions() {
