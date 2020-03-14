@@ -23,9 +23,9 @@ class DataStorage {
         return result;
     }
 
-    subscriptionsGetByLastCheck(lastCheck) {
+    subscriptionsGetByLastCheck(lastCheck, service) {
         return this._db.get('subscriptions')
-            .filter(subscription => subscription.lastCheck < lastCheck)
+            .filter(subscription => subscription.service === service && subscription.lastCheck < lastCheck)
             .value();
     }
 
