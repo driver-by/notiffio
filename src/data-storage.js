@@ -82,7 +82,8 @@ class DataStorage {
         }
         if (subscription) {
             subscription.servers = subscription.servers || [];
-            if (subscription.servers.findIndex(server => server.serverId === serverId) === -1) {
+            if (subscription.servers.findIndex(server => server.serverId === serverId &&
+                server.channelId === channelId) === -1) {
                 subscription.servers.push({serverId, channelId});
                 this._subscriptionFind(subscriptionName)
                     .assign(subscription)
@@ -124,7 +125,7 @@ class DataStorage {
         }
         if (subscription && subscription.servers) {
             subscription.servers = subscription.servers.filter(subscription => {
-                return subscription.serverId !== serverId && subscription.channelId !== channelId;
+                return subscription.serverId !== serverId || subscription.channelId !== channelId;
             });
             if (subscription.servers.length) {
                 this._subscriptionFind(subscriptionName)
