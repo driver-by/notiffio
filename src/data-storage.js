@@ -45,16 +45,16 @@ class DataStorage {
             .value();
     }
 
-    subscriptionGet(service, channel) {
-        return this._db.get('subscriptions')
-            .find({name: this.getSubscriptionName(service, channel)});
+    subscriptionFind(service, channel) {
+        const subscriptionName = this.getSubscriptionName(service, channel);
+        return this._subscriptionFind(subscriptionName);
     }
 
     subscriptionAdd(serverId, channelId, serverName, channelName, service, channel) {
         this._initTable('servers');
         this._initTable('subscriptions');
         const server = this._serverGet(serverId);
-        const subscription = this.subscriptionGet(service, channel).value();
+        const subscription = this.subscriptionFind(service, channel).value();
         const subscriptionName = this.getSubscriptionName(service, channel);
         const subscriptionToServer = {
             name: subscriptionName,
@@ -84,8 +84,7 @@ class DataStorage {
             subscription.servers = subscription.servers || [];
             if (subscription.servers.findIndex(server => server.serverId === serverId) === -1) {
                 subscription.servers.push({serverId, channelId});
-                this._db.get('subscriptions')
-                    .find({name: subscriptionName})
+                this._subscriptionFind(subscriptionName)
                     .assign(subscription)
                     .write();
             }
@@ -110,7 +109,7 @@ class DataStorage {
         this._initTable('servers');
         this._initTable('subscriptions');
         const server = this._serverGet(serverId);
-        const subscription = this.subscriptionGet(serviceName, channel).value();
+        const subscription = this.subscriptionFind(serviceName, channel).value();
         const subscriptionName = this.getSubscriptionName(serviceName, channel);
 
         if (server && server.subscriptions) {
@@ -128,13 +127,12 @@ class DataStorage {
                 return subscription.serverId !== serverId && subscription.channelId !== channelId;
             });
             if (subscription.servers.length) {
-                this._db.get('subscriptions')
-                    .find({name: subscriptionName})
+                this._subscriptionFind(subscriptionName)
                     .assign(subscription)
                     .write();
             } else {
                 this._db.get('subscriptions')
-                    .remove({name: this.getSubscriptionName(serviceName, channel)})
+                    .remove(sub => sub.name.toLowerCase() === subscriptionName.toLowerCase())
                     .write();
             }
         }
@@ -202,8 +200,7 @@ class DataStorage {
     }
 
     updateSubscription(subscriptionName, subscription) {
-        this._db.get('subscriptions')
-            .find({name: subscriptionName})
+        this._subscriptionFind(subscriptionName)
             .assign(subscription)
             .write();
     }
@@ -229,6 +226,11 @@ class DataStorage {
             this._db.set(name, [])
                 .write();
         }
+    }
+
+    _subscriptionFind(name) {
+        return this._db.get('subscriptions')
+            .find(sub => sub.name.toLowerCase() === name.toLowerCase())
     }
 
     _getServiceChannel(name) {
