@@ -61,6 +61,7 @@ function processRemove(command, msg, dataStorage) {
 
 function processSubscribe(command, msg, dataStorage) {
     const serverId = msg.guild.id;
+    const serverName = msg.guild.name;
     const channelId = msg.channel.id;
     const channelName = msg.channel.name;
     const subscribeTo = getServiceInfo(command.main);
@@ -78,7 +79,7 @@ function processSubscribe(command, msg, dataStorage) {
                     {channelInfo},
                 );
             });
-            dataStorage.subscriptionAdd(serverId, channelId, channelName, subscribeTo.service, subscribeTo.channel);
+            dataStorage.subscriptionAdd(serverId, channelId, serverName, channelName, subscribeTo.service, subscribeTo.channel);
             text = `Успешно подписались на канал ${subscribeTo.channel} (${subscribeTo.service}).` +
               ` Вы получите оповещение, когда стрим начнется`;
         }

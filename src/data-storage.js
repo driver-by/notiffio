@@ -17,10 +17,26 @@ class DataStorage {
         return service + this.SUBSCRIPTION_NAME_DELIMITER + channel;
     }
 
+    serverAdd(server) {
+        const result = this._serverGet(server.id);
+        if (!result) {
+            this._serverAdd(server);
+        }
+
+        return result;
+    }
+
     serverGet(serverId) {
         const result = this._serverGet(serverId);
 
         return result;
+    }
+
+    serverRemove(serverId) {
+        this.subscriptionRemove(serverId);
+        this._db.get('servers')
+            .remove({id: serverId})
+            .write();
     }
 
     subscriptionsGetByLastCheck(lastCheck, service) {
@@ -34,7 +50,7 @@ class DataStorage {
             .find({name: this.getSubscriptionName(service, channel)});
     }
 
-    subscriptionAdd(serverId, channelId, channelName, service, channel) {
+    subscriptionAdd(serverId, channelId, serverName, channelName, service, channel) {
         this._initTable('servers');
         this._initTable('subscriptions');
         const server = this._serverGet(serverId);
@@ -60,7 +76,7 @@ class DataStorage {
             }
         } else {
             this._db.get('servers')
-                .push({id: serverId, subscriptions: [subscriptionToServer]})
+                .push({id: serverId, name: serverName, subscriptions: [subscriptionToServer]})
                 .write();
         }
         if (subscription) {
@@ -216,6 +232,13 @@ class DataStorage {
         const data = name.split(this.SUBSCRIPTION_NAME_DELIMITER);
 
         return {service: data[0], channel: data[1]};
+    }
+
+    _serverAdd(server) {
+        this._initTable('servers');
+        this._db.get('servers')
+            .push({id: server.id, name: server.name, subscriptions: []})
+            .write();
     }
 
     _serverGet(serverId) {
