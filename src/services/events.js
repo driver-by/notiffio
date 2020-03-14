@@ -1,0 +1,6 @@
+module.exports = {
+    EVENT_ALL: 'ALL',
+    EVENT_GO_LIVE: 'GO_LIVE',
+    EVENT_GO_OFFLINE: 'GO_OFFLINE',
+    EVENT_CHANNEL_NOT_FOUND: 'NOT_FOUND',
+};
