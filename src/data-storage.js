@@ -132,9 +132,7 @@ class DataStorage {
                     .assign(subscription)
                     .write();
             } else {
-                this._db.get('subscriptions')
-                    .remove(sub => sub.name.toLowerCase() === subscriptionName.toLowerCase())
-                    .write();
+                this._subscriptionRemove(subscriptionName);
             }
         }
     }
@@ -165,15 +163,15 @@ class DataStorage {
             return;
         }
         removeSubscriptions.forEach(removingSubscription => {
-            const subDb = this._db.get('subscriptions')
-                .find({name: removingSubscription.name});
+            const subDb = this._subscriptionFind(removingSubscription.name);
             let sub = subDb.value();
 
             if (!sub || !sub.servers || !sub.servers.length) {
                 return;
             }
             if (channelId) {
-                sub.servers = sub.servers.filter(server => server.channelId !== channelId || !server.serverId === serverId);
+                sub.servers = sub.servers.filter(server => server.channelId !== channelId ||
+                    server.serverId !== serverId);
             } else {
                 sub.servers = sub.servers.filter(server => server.serverId !== serverId);
             }
@@ -181,9 +179,7 @@ class DataStorage {
                 subDb.assign(sub)
                     .write();
             } else {
-                this._db.get('subscriptions')
-                    .remove({name: removingSubscription.name})
-                    .write();
+                this._subscriptionRemove(removingSubscription.name);
             }
         });
     }
@@ -232,6 +228,12 @@ class DataStorage {
     _subscriptionFind(name) {
         return this._db.get('subscriptions')
             .find(sub => sub.name.toLowerCase() === name.toLowerCase())
+    }
+
+    _subscriptionRemove(name) {
+        this._db.get('subscriptions')
+            .remove(sub => sub.name.toLowerCase() === name.toLowerCase())
+            .write();
     }
 
     _getServiceChannel(name) {
