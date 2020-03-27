@@ -1,6 +1,7 @@
 const BaseService = require('./base-service');
 const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 const events = require('./events');
+const logger = require('../logger').getLogger();
 
 /**
  * Basic functionality for streaming services
@@ -39,7 +40,7 @@ class StreamingService extends BaseService {
         return this.getChannelStatuses(channelsToCheck)
             .then(
                 this._processChannelStatuses.bind(this, subscriptionsToCheck),
-                error => this._logger.error(`getChannelStatuses error`, error)
+                error => logger.error(`getChannelStatuses error`, error)
             );
     }
 
