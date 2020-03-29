@@ -1,5 +1,9 @@
 const process = function(command, msg, dataStorage) {
-    msg.reply('Pong!');
+    const text = `Pong!`;
+
+    msg.reply(text);
+
+    return text;
 };
 
 module.exports = process;
