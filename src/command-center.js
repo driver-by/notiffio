@@ -13,9 +13,9 @@ class CommandCenter {
         }
         const command = this._splitCommand(this.COMMAND_PREFIX, msg.content);
         if (commands[command.main]) {
-            commands[command.main](command, msg, this._dataStorage);
+            return commands[command.main](command, msg, this._dataStorage);
         } else {
-            commands.default(command, msg, this._dataStorage);
+            return commands.default(command, msg, this._dataStorage);
         }
     }
 

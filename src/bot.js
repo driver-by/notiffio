@@ -51,8 +51,8 @@ class Bot {
     _processCommand(msg) {
         const result = this._commandCenter.process(msg);
         if (result) {
-            this._logger.info(`<${msg.guild.id}/${msg.guild.name}--${msg.channel.id}/${msg.channel.name}` +
-            `Command '${msg.content}' ${result}`);
+            this._logger.info(`Command '${msg.content}' => "${result}"` +
+            `<${msg.guild.id}/${msg.guild.name}--${msg.channel.id}/${msg.channel.name}>`);
         }
     }
 
