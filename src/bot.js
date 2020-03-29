@@ -133,7 +133,6 @@ class Bot {
                 .get(server.channelId);
             if (!channel) {
                 this._logger.warn(`Channel not found! %s`, server.channelId);
-                this._dataStorage.subscriptionRemoveList(server.serverId, server.channelId);
                 return;
             }
             channel.send(msg);
