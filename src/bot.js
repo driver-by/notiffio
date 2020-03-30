@@ -124,18 +124,22 @@ class Bot {
                 msg = `Анонс на канале ${params.subscription.nickname} изменен:\n`;
                 msg += `**${params.broadcast.title.trim()}**\n`;
                 if (params.broadcast.game !== params.broadcastPrevious.game) {
-                    msg += `~~${params.broadcastPrevious.game.trim()}~~ **${params.broadcast.game.trim()}**\n`;
+                    msg += `~~${params.broadcastPrevious.game.trim()}~~ ` +
+                        `**${params.broadcast.game.trim()}**\n`;
                 } else {
                     msg += `**${params.broadcast.game.trim()}**\n`;
                 }
                 if (params.broadcast.start !== params.broadcastPrevious.start) {
-                    msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ${this._getTimeFormatted(params.broadcast.start)} (мск)\n`;
+                    msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
+                        `${this._getTimeFormatted(params.broadcast.start)} (мск)\n`;
                 } else {
                     msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск)\n`;
                 }
                 break;
             case events.EVENT_BROADCAST_REMOVE:
-                msg = `Анонс на канале ${params.subscription.nickname} по *${params.broadcastPrevious.game.trim()}* отменен\n`;
+                msg = `Анонс на канале ${params.subscription.nickname} ` +
+                    `**${params.broadcastPrevious.title.trim()}** ` +
+                    `(*${params.broadcastPrevious.game.trim()}*) отменен`;
                 break;
         }
 
