@@ -2,6 +2,7 @@ const StreamingService = require('./streaming-service');
 const ChannelDetails = require('../models/channel-details');
 const axios = require('axios');
 const events = require('./events');
+const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 
 const MAX_CHANNELS_PER_REQUEST = 50;
 
@@ -16,8 +17,11 @@ class GoodgameService extends StreamingService {
 
         for (let i = 0; i < channels.length; i += MAX_CHANNELS_PER_REQUEST) {
             const channelsPart = channels.slice(i, i + MAX_CHANNELS_PER_REQUEST);
+            const payload = channelsPart.map(channel => {
+                return {url: `https://goodgame.ru/api/4/stream/${channel}`};
+            });
             promises.push(
-                axios.get(`https://goodgame.ru/api/getggchannelstatus?id=${channelsPart.join(',')}&fmt=json`)
+                axios.post(`https://goodgame.ru/api/4/combinedRequest`, payload)
             );
         }
         return Promise.all(promises).then(response => {
@@ -27,31 +31,30 @@ class GoodgameService extends StreamingService {
             if (!response || !response.length) {
                 return result;
             }
-            response = Object.assign.apply({}, response);
-            Object.keys(response)
-                .forEach(i => {
-                    const channel = response[i];
+            response.forEach(channel => {
+                    if (!channel.success || !channel.data) {
+                        return;
+                    }
+                    const channelData = channel.data;
+                    if (channelData.broadcast) {
+                        channelData.broadcast.start *= 1000;
+                    }
                     result.push(new ChannelDetails({
-                        name: channel.key,
-                        id: channel.stream_id,
-                        status: channel.status,
-                        title: channel.title,
-                        game: channel.games,
-                        viewers: channel.viewers,
-                        emdebCode: channel.embed,
-                        img: channel.img,
-                        thumb: channel.thumb,
-                        description: channel.description,
-                        url: channel.url,
+                        name: channelData.channelkey,
+                        nickname: channelData.streamer ? channelData.streamer.nickname : null,
+                        id: channelData.id,
+                        status: channelData.status ? STATUS_LIVE : STATUS_DEAD,
+                        title: channelData.title,
+                        game: channelData.game,
+                        viewers: channelData.viewers,
+                        img: channelData.poster,
+                        url: channelData.link,
+                        broadcast: channelData.broadcast,
                     }));
                 });
 
             return result;
         });
-    }
-
-    getNickName(subscription) {
-        return subscription.channelInfo ? subscription.channelInfo.nickname : subscription.channel;
     }
 
     _processChannelStatuses(subscriptionsToCheck, result) {

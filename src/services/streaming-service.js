@@ -21,10 +21,6 @@ class StreamingService extends BaseService {
 
     }
 
-    getNickName(subscription) {
-        return subscription.channel;
-    }
-
     async update() {
         const now = Date.now();
         const subscriptionsToCheck = this._dataStorage.subscriptionsGetByLastCheck(
@@ -80,16 +76,13 @@ class StreamingService extends BaseService {
                     if (!firstCheck) {
                         savedData.statusChangeTimestamp = now;
                         if (!skipNotificationAsItIsExpired) {
-                            const nickname = this.getNickName(savedData);
                             if (subscription.status === STATUS_LIVE) {
                                 this._emitEvent(events.EVENT_GO_LIVE, {
-                                    nickname,
                                     subscription,
                                     servers: savedData.servers,
                                 });
                             } else {
                                 this._emitEvent(events.EVENT_GO_OFFLINE, {
-                                    nickname,
                                     subscription,
                                     servers: savedData.servers,
                                 });
@@ -98,6 +91,36 @@ class StreamingService extends BaseService {
                     }
                 }
             }
+            // Check for broadcasts changes
+            let eventName;
+            const savedBroadcast = savedData.lastInfo ? savedData.lastInfo.broadcast : null;
+            if (subscription.broadcast && !savedBroadcast) {
+                eventName = events.EVENT_BROADCAST_ADD;
+            } else if (!subscription.broadcast && savedBroadcast) {
+                // Send "Remove" only if start was in future, otherwise it was naturally finished
+                if (savedBroadcast.start > Date.now()) {
+                    eventName = events.EVENT_BROADCAST_REMOVE;
+                }
+            } else if (subscription.broadcast && savedBroadcast && (
+                    subscription.broadcast.start !== savedBroadcast.start ||
+                    subscription.broadcast.game !== savedBroadcast.game
+                )) {
+                // Send "Change" only if start was in future, otherwise it was naturally finished
+                if (savedBroadcast.start > Date.now()) {
+                    eventName = events.EVENT_BROADCAST_CHANGE;
+                } else {
+                    eventName = events.EVENT_BROADCAST_ADD;
+                }
+            }
+            if (eventName && !skipNotificationAsItIsExpired) {
+                this._emitEvent(eventName, {
+                    broadcast: subscription.broadcast,
+                    broadcastPrevious: savedBroadcast,
+                    subscription,
+                    servers: savedData.servers,
+                });
+            }
+
             savedData.lastCheck = now;
             savedData.lastInfo = subscription;
             this._dataStorage.updateSubscription(savedData.name, savedData)

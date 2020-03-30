@@ -101,17 +101,41 @@ class Bot {
 
         switch (eventName) {
             case events.EVENT_GO_LIVE:
-                msg = `@everyone Стрим на канале **${params.nickname}** начался!\n` +
+                msg = `@everyone Стрим на канале **${params.subscription.nickname}** начался!\n` +
                     `**${params.subscription.title.trim()}**\n` +
                     `*${params.subscription.game.trim()}*\n`+
                     `Заходите на ${params.subscription.url}\n` +
                     `${params.subscription.img}`;
                 break;
             case events.EVENT_GO_OFFLINE:
-                msg = `Стрим на канале ${params.nickname} закончился`;
+                msg = `Стрим на канале ${params.subscription.nickname} закончился`;
                 break;
             case events.EVENT_CHANNEL_NOT_FOUND:
                 msg = `Канал ${params.channel} не найден`;
+                break;
+            case events.EVENT_BROADCAST_ADD:
+                msg = `@everyone Анонс на канале ${params.subscription.nickname}:\n` +
+                    `**${params.broadcast.title.trim()}**\n` +
+                    `*${params.broadcast.game.trim()}*\n`+
+                    `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск)\n` +
+                    `${params.subscription.img}`;
+                break;
+            case events.EVENT_BROADCAST_CHANGE:
+                msg = `Анонс на канале ${params.subscription.nickname} изменен:\n`;
+                msg += `**${params.broadcast.title.trim()}**\n`;
+                if (params.broadcast.game !== params.broadcastPrevious.game) {
+                    msg += `~~${params.broadcastPrevious.game.trim()}~~ **${params.broadcast.game.trim()}**\n`;
+                } else {
+                    msg += `**${params.broadcast.game.trim()}**\n`;
+                }
+                if (params.broadcast.start !== params.broadcastPrevious.start) {
+                    msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ${this._getTimeFormatted(params.broadcast.start)} (мск)\n`;
+                } else {
+                    msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск)\n`;
+                }
+                break;
+            case events.EVENT_BROADCAST_REMOVE:
+                msg = `Анонс на канале ${params.subscription.nickname} по *${params.broadcastPrevious.game.trim()}* отменен\n`;
                 break;
         }
 
@@ -137,6 +161,13 @@ class Bot {
             }
             channel.send(msg);
         });
+    }
+
+    _getTimeFormatted(timestamp) {
+        return new Date(timestamp).toLocaleString(
+            'ru-RU',
+            { timeZone: 'Europe/Moscow' },
+        );
     }
 }
 
