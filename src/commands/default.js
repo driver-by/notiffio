@@ -73,12 +73,6 @@ function processSubscribe(command, msg, dataStorage) {
             dataStorage.subscriptionRemove(serverId, channelId, subscribeTo.service, subscribeTo.channel);
             text = `Отписались от канала ${subscribeTo.channel} (${subscribeTo.service}).`;
         } else {
-            getChannelInfo(command.main).then(channelInfo => {
-                dataStorage.updateSubscription(
-                    dataStorage.getSubscriptionName(subscribeTo.service, subscribeTo.channel),
-                    {channelInfo},
-                );
-            });
             dataStorage.subscriptionAdd(serverId, channelId, serverName, channelName, subscribeTo.service, subscribeTo.channel);
             text = `Успешно подписались на канал ${subscribeTo.channel} (${subscribeTo.service}).` +
               ` Вы получите оповещение, когда стрим начнется`;
@@ -112,32 +106,6 @@ function getServiceInfo(url) {
     }
 
     return {service, channel};
-}
-
-async function getChannelInfo(url) {
-    return axios.get(url).then(response => {
-        // Only goodgame.ru case
-        // Find nickname
-        if (!response.data) {
-            logger.error(`getChannelInfo empty response, url: ${url}`);
-        }
-        let result = {};
-        let match = response.data.match(/"streamer":\s?"([^"]+)"/i);
-        if (!match || !match[1]) {
-            match = response.data.match(/"streamer_name":\s?"([^"]+)"/i);
-        }
-        if (match && match[1]) {
-            const nickname = match[1].trim();
-            if (nickname.length < 128) {
-                // Seems ok
-                result.nickname = nickname;
-            }
-        }
-
-        return result;
-    },
-    error => logger.error(`getChannelInfo error: `, error.toJSON())
-    );
 }
 
 module.exports = process;
