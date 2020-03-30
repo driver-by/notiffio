@@ -95,7 +95,10 @@ class StreamingService extends BaseService {
             let eventName;
             const savedBroadcast = savedData.lastInfo ? savedData.lastInfo.broadcast : null;
             if (subscription.broadcast && !savedBroadcast) {
-                eventName = events.EVENT_BROADCAST_ADD;
+                // Send "Add" only if start is in future
+                if (subscription.broadcast.start > Date.now()) {
+                    eventName = events.EVENT_BROADCAST_ADD;
+                }
             } else if (!subscription.broadcast && savedBroadcast) {
                 // Send "Remove" only if start was in future, otherwise it was naturally finished
                 if (savedBroadcast.start > Date.now()) {
