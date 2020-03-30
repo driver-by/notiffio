@@ -9,6 +9,7 @@ const CommandCenter = require('./command-center');
 const services = require('./services');
 const events = require('./services/events');
 const {getLogger} = require('./logger');
+const dateAndTime = require('date-and-time');
 
 class Bot {
 
@@ -117,7 +118,8 @@ class Bot {
                 msg = `@everyone Анонс на канале ${params.subscription.nickname}:\n` +
                     `**${params.broadcast.title.trim()}**\n` +
                     `*${params.broadcast.game.trim()}*\n`+
-                    `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск)\n` +
+                    `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                    `через ${this._getTimeElapsed(params.broadcast.start)}\n` +
                     `${params.subscription.img}`;
                 break;
             case events.EVENT_BROADCAST_CHANGE:
@@ -131,9 +133,11 @@ class Bot {
                 }
                 if (params.broadcast.start !== params.broadcastPrevious.start) {
                     msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
-                        `${this._getTimeFormatted(params.broadcast.start)} (мск)\n`;
+                        `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                        `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
                 } else {
-                    msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск)\n`;
+                    msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                        `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
                 }
                 break;
             case events.EVENT_BROADCAST_REMOVE:
@@ -168,10 +172,28 @@ class Bot {
     }
 
     _getTimeFormatted(timestamp) {
-        return new Date(timestamp).toLocaleString(
-            'ru-RU',
-            { timeZone: 'Europe/Moscow' },
-        );
+        const moscowOffset = '180';
+        const date = new Date(timestamp);
+        const offset = date.getTimezoneOffset();
+        dateAndTime.addMinutes(date, moscowOffset - offset);
+
+        return dateAndTime.format(date, 'HH:mm DD.MM');
+    }
+
+    _getTimeElapsed(timestamp) {
+        const diff = timestamp - Date.now();
+
+        if (diff < 0) {
+            return null;
+        }
+        const minutes = Math.round(diff / 1000 / 60) % 60;
+        const hours = Math.floor(diff / 1000 / 60 / 60);
+
+        if (hours > 0) {
+            return `${hours} ч ${minutes} мин`;
+        } else {
+            return `${minutes} мин`;
+        }
     }
 }
 
