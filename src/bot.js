@@ -179,6 +179,9 @@ class Bot {
      */
     _getTimeFormatted(timestamp) {
         const moscowOffset = '180';
+        if (!timestamp) {
+            return '';
+        }
         const date = new Date(timestamp);
         const offset = date.getTimezoneOffset();
 
