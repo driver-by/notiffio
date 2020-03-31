@@ -171,13 +171,18 @@ class Bot {
         });
     }
 
+    /**
+     * Format time HH:mm DD.MM and in MSK timezone
+     * @param timestamp
+     * @returns {*|string|FormatWrap}
+     * @private
+     */
     _getTimeFormatted(timestamp) {
         const moscowOffset = '180';
         const date = new Date(timestamp);
         const offset = date.getTimezoneOffset();
-        dateAndTime.addMinutes(date, moscowOffset - offset);
 
-        return dateAndTime.format(date, 'HH:mm DD.MM');
+        return dateAndTime.addMinutes(date, moscowOffset - offset).format(date, 'HH:mm DD.MM');
     }
 
     _getTimeElapsed(timestamp) {
