@@ -115,7 +115,7 @@ class Bot {
                 msg = `Канал ${params.channel} не найден`;
                 break;
             case events.EVENT_BROADCAST_ADD:
-                msg = `@everyone Анонс на канале ${params.subscription.nickname}:\n` +
+                msg = `Анонс на канале ${params.subscription.nickname}:\n` +
                     `**${params.broadcast.title.trim()}**\n` +
                     `*${params.broadcast.game.trim()}*\n`+
                     `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
