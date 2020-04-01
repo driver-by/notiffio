@@ -182,10 +182,11 @@ class Bot {
         if (!timestamp) {
             return '';
         }
-        const date = new Date(timestamp);
+        let date = new Date(timestamp);
         const offset = date.getTimezoneOffset();
+        date = dateAndTime.addMinutes(date, moscowOffset - offset);
 
-        return dateAndTime.addMinutes(date, moscowOffset - offset).format(date, 'HH:mm DD.MM');
+        return dateAndTime.format(date, 'HH:mm DD.MM');
     }
 
     _getTimeElapsed(timestamp) {
