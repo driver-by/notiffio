@@ -120,7 +120,7 @@ class Bot {
                 msg = `Канал ${params.channel} не найден`;
                 break;
             case events.EVENT_BROADCAST_ADD:
-                msg = `@everyone Анонс на канале ${params.subscription.nickname}:\n` +
+                msg = `Анонс на канале ${params.subscription.nickname}:\n` +
                     `**${params.broadcast.title.trim()}**\n` +
                     `*${params.broadcast.game.trim()}*\n`+
                     `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
@@ -187,10 +187,11 @@ class Bot {
         if (!timestamp) {
             return '';
         }
-        const date = new Date(timestamp);
+        let date = new Date(timestamp);
         const offset = date.getTimezoneOffset();
+        date = dateAndTime.addMinutes(date, moscowOffset - offset);
 
-        return dateAndTime.addMinutes(date, moscowOffset - offset).format(date, 'HH:mm DD.MM');
+        return dateAndTime.format(date, 'HH:mm DD.MM');
     }
 
     _getTimeElapsed(timestamp) {
