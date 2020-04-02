@@ -111,6 +111,11 @@ class Bot {
             case events.EVENT_GO_OFFLINE:
                 msg = `Стрим на канале ${params.subscription.nickname} закончился`;
                 break;
+            case events.EVENT_GO_LIVE_AGAIN:
+                msg = `Стрим на канале **${params.subscription.nickname}** продолжается!\n` +
+                    `**${params.subscription.title.trim()}**\n` +
+                    `*${params.subscription.game.trim()}*\n`;
+                break;
             case events.EVENT_CHANNEL_NOT_FOUND:
                 msg = `Канал ${params.channel} не найден`;
                 break;

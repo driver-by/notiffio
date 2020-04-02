@@ -15,6 +15,7 @@ class StreamingService extends BaseService {
         this.UPDATE_INTERVAL = 20 * 1000;
         this.NOT_CHANGE_TO_DEAD_WITHIN = 60 * 1000;
         this.NOTIFICATION_EXPIRED = 10 * 60 * 1000;
+        this.LIVE_AGAIN_WITHIN = 60 * 60 * 1000;
     }
 
     async getChannelStatuses(channels) {
@@ -74,20 +75,26 @@ class StreamingService extends BaseService {
                     savedData.previousStatus = savedData.lastStatus;
                     savedData.lastStatus = subscription.status;
                     if (!firstCheck) {
-                        savedData.statusChangeTimestamp = now;
                         if (!skipNotificationAsItIsExpired) {
+                            let eventName;
                             if (subscription.status === STATUS_LIVE) {
-                                this._emitEvent(events.EVENT_GO_LIVE, {
-                                    subscription,
-                                    servers: savedData.servers,
-                                });
+                                // If the game is the same and LIVE not long after DEAD, then LIVE_AGAIN event
+                                if (savedData.statusChangedOnGame === subscription.game &&
+                                    now - savedData.statusChangeTimestamp < this.LIVE_AGAIN_WITHIN) {
+                                    eventName = events.EVENT_GO_LIVE_AGAIN;
+                                } else {
+                                    eventName = events.EVENT_GO_LIVE;
+                                }
                             } else {
-                                this._emitEvent(events.EVENT_GO_OFFLINE, {
-                                    subscription,
-                                    servers: savedData.servers,
-                                });
+                                eventName = events.EVENT_GO_OFFLINE;
                             }
+                            this._emitEvent(eventName, {
+                                subscription,
+                                servers: savedData.servers,
+                            });
                         }
+                        savedData.statusChangeTimestamp = now;
+                        savedData.statusChangedOnGame = subscription.game;
                     }
                 }
             }
