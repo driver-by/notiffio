@@ -2,6 +2,7 @@
 
 Discord bot, sending notifications to selected channels on different events, using [discord.js](https://github.com/discordjs). Currently supports:
 - goodgame.ru stream start/stop
+- goodgame.ru announcement add/edit/remove
 
 ### Start to use the bot
 
