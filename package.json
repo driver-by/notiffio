@@ -1,6 +1,6 @@
 {
   "name": "notiffio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Get stream start notifications from goodgame.ru",
   "main": "index.js",
   "scripts": {
