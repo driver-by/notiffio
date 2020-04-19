@@ -27,8 +27,8 @@ class Bot {
         this._client.on('message', this._message.bind(this));
         this._client.on('error', this._error.bind(this));
         this._client.on('rateLimit', this._rateLimit.bind(this));
-        this._client.on('disconnect', this._disconnect.bind(this));
-        this._client.on('reconnecting', this._reconnecting.bind(this));
+        this._client.on('shardDisconnected', this._disconnect.bind(this));
+        this._client.on('shardReconnecting', this._reconnecting.bind(this));
         this._client.on('guildCreate', this._guildCreate.bind(this));
         this._client.on('guildDelete', this._guildDelete.bind(this));
         this._client.login(SECRET_KEY).then(() => {
@@ -160,13 +160,13 @@ class Bot {
 
     _sendMessageToChannels(servers, msg) {
         servers.forEach(server => {
-            const s = this._client.guilds
+            const s = this._client.guilds.cache
                 .get(server.serverId);
             if (!s) {
                 this._logger.warn(`Server not found! %s`, server.serverId);
                 return;
             }
-            const channel = s.channels
+            const channel = s.channels.cache
                 .get(server.channelId);
             if (!channel) {
                 this._logger.warn(`Channel not found! %s`, server.channelId);
