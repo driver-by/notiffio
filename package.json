@@ -13,12 +13,12 @@
   "dependencies": {
     "axios": "^0.19.2",
     "date-and-time": "^0.13.1",
-    "discord.js": "^11.5.1",
+    "discord.js": "^12.2.0",
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
-    "nodemon": "^2.0.2"
+    "nodemon": "^2.0.3"
   }
 }
