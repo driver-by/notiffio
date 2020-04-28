@@ -10,6 +10,7 @@ const services = require('./services');
 const events = require('./services/events');
 const {getLogger} = require('./logger');
 const dateAndTime = require('date-and-time');
+const helper = require('./services/helper');
 
 class Bot {
 
@@ -100,66 +101,7 @@ class Bot {
     _onEvents(service, eventName, params) {
         let msg;
 
-        switch (eventName) {
-            case events.EVENT_GO_LIVE:
-                msg = `@everyone Стрим на канале **${params.subscription.nickname}** начался!\n` +
-                    `**${params.subscription.title.trim()}**\n` +
-                    `*${params.subscription.game.trim()}*\n`+
-                    `Заходите на ${params.subscription.url}\n` +
-                    `${params.subscription.img}`;
-                break;
-            case events.EVENT_GO_OFFLINE:
-                msg = `Стрим на канале ${params.subscription.nickname} закончился`;
-                break;
-            case events.EVENT_GO_LIVE_AGAIN:
-                msg = `Стрим на канале **${params.subscription.nickname}** продолжается!\n` +
-                    `**${params.subscription.title.trim()}**\n` +
-                    `*${params.subscription.game.trim()}*\n`;
-                break;
-            case events.EVENT_CHANNEL_NOT_FOUND:
-                msg = `Канал ${params.channel} не найден`;
-                break;
-            case events.EVENT_BROADCAST_ADD:
-                msg = `Анонс на канале ${params.subscription.nickname}:\n` +
-                    `**${params.broadcast.title.trim()}**\n` +
-                    `*${params.broadcast.game.trim()}*\n`+
-                    `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                    `через ${this._getTimeElapsed(params.broadcast.start)}\n` +
-                    `${params.subscription.img}`;
-                break;
-            case events.EVENT_BROADCAST_CHANGE:
-                msg = `Анонс на канале ${params.subscription.nickname} изменен:\n`;
-                msg += `**${params.broadcast.title.trim()}**\n`;
-                if (params.broadcast.game !== params.broadcastPrevious.game) {
-                    msg += `~~${params.broadcastPrevious.game.trim()}~~ ` +
-                        `**${params.broadcast.game.trim()}**\n`;
-                } else {
-                    msg += `**${params.broadcast.game.trim()}**\n`;
-                }
-                if (params.broadcast.start !== params.broadcastPrevious.start) {
-                    msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
-                        `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                        `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
-                } else {
-                    msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                        `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
-                }
-                break;
-            case events.EVENT_BROADCAST_REMOVE:
-                msg = `Анонс на канале ${params.subscription.nickname} ` +
-                    `**${params.broadcastPrevious.title.trim()}** ` +
-                    `(*${params.broadcastPrevious.game.trim()}*) отменен`;
-                break;
-        }
-
-        if (msg) {
-            this._logger.info(msg);
-            this._sendMessageToChannels(params.servers, msg);
-        }
-    }
-
-    _sendMessageToChannels(servers, msg) {
-        servers.forEach(server => {
+        params.servers.forEach(server => {
             const s = this._client.guilds.cache
                 .get(server.serverId);
             if (!s) {
@@ -172,7 +114,70 @@ class Bot {
                 this._logger.warn(`Channel not found! %s`, server.channelId);
                 return;
             }
-            channel.send(msg);
+            switch (eventName) {
+                case events.EVENT_GO_LIVE:
+                    const channel = helper.getServiceInfo(params.subscription.url);
+                    let message = this._dataStorage.getSettingMessageStreamStart(
+                        server.serverId,
+                        this._dataStorage.getSubscriptionName(channel.service, channel.channel),
+                    );
+                    if (!message) {
+                        message = `@everyone Стрим на канале **{channel}** начался!`;
+                    }
+                    message = message.replace('{channel}', params.subscription.nickname);
+                    msg = `${message}\n` +
+                        `**${params.subscription.title.trim()}**\n` +
+                        `*${params.subscription.game.trim()}*\n`+
+                        `Заходите на ${params.subscription.url}\n` +
+                        `${params.subscription.img}`;
+                    break;
+                case events.EVENT_GO_OFFLINE:
+                    msg = `Стрим на канале ${params.subscription.nickname} закончился`;
+                    break;
+                case events.EVENT_GO_LIVE_AGAIN:
+                    msg = `Стрим на канале **${params.subscription.nickname}** продолжается!\n` +
+                        `**${params.subscription.title.trim()}**\n` +
+                        `*${params.subscription.game.trim()}*\n`;
+                    break;
+                case events.EVENT_CHANNEL_NOT_FOUND:
+                    msg = `Канал ${params.channel} не найден`;
+                    break;
+                case events.EVENT_BROADCAST_ADD:
+                    msg = `Анонс на канале ${params.subscription.nickname}:\n` +
+                        `**${params.broadcast.title.trim()}**\n` +
+                        `*${params.broadcast.game.trim()}*\n`+
+                        `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                        `через ${this._getTimeElapsed(params.broadcast.start)}\n` +
+                        `${params.subscription.img}`;
+                    break;
+                case events.EVENT_BROADCAST_CHANGE:
+                    msg = `Анонс на канале ${params.subscription.nickname} изменен:\n`;
+                    msg += `**${params.broadcast.title.trim()}**\n`;
+                    if (params.broadcast.game !== params.broadcastPrevious.game) {
+                        msg += `~~${params.broadcastPrevious.game.trim()}~~ ` +
+                            `**${params.broadcast.game.trim()}**\n`;
+                    } else {
+                        msg += `**${params.broadcast.game.trim()}**\n`;
+                    }
+                    if (params.broadcast.start !== params.broadcastPrevious.start) {
+                        msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
+                            `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                            `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
+                    } else {
+                        msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                            `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
+                    }
+                    break;
+                case events.EVENT_BROADCAST_REMOVE:
+                    msg = `Анонс на канале ${params.subscription.nickname} ` +
+                        `**${params.broadcastPrevious.title.trim()}** ` +
+                        `(*${params.broadcastPrevious.game.trim()}*) отменен`;
+                    break;
+            }
+            if (msg) {
+                this._logger.info(msg);
+                channel.send(msg);
+            }
         });
     }
 

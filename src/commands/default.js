@@ -1,5 +1,6 @@
 const axios = require('axios');
 const logger = require('../logger').getLogger();
+const helper = require('../services/helper');
 
 const process = function(command, msg, dataStorage) {
     switch (command.main) {
@@ -64,7 +65,7 @@ function processSubscribe(command, msg, dataStorage) {
     const serverName = msg.guild.name;
     const channelId = msg.channel.id;
     const channelName = msg.channel.name;
-    const subscribeTo = getServiceInfo(command.main);
+    const subscribeTo = helper.getServiceInfo(command.main);
     let text;
     if (subscribeTo && subscribeTo.channel) {
         const subscriptionName = dataStorage.getSubscriptionName(subscribeTo.service, subscribeTo.channel);
@@ -83,29 +84,6 @@ function processSubscribe(command, msg, dataStorage) {
     msg.channel.send(text);
 
     return text;
-}
-
-function getServiceInfo(url) {
-    if (!url) {
-        return null;
-    }
-
-    const match = url.match(/^(?:https?:\/\/)?(\w*\.\w*)\/([\w-_.]*)\/([\w-_.]*)\/?/i);
-    if (!match) {
-        return null;
-    }
-    const [m, service, param1, param2] = match;
-    let channel;
-    switch (service) {
-        case 'goodgame.ru':
-            channel = param2;
-            break;
-    }
-    if (!channel) {
-        return null;
-    }
-
-    return {service, channel};
 }
 
 module.exports = process;
