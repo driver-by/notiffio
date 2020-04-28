@@ -40,7 +40,7 @@ const process = function(command, msg, dataStorage) {
             `Стрим на канале {channel} начался** - ` +
             `устанавливает собщение для оповещения о начале стрима ` +
             `({channel} в сообщении автоматически заменяется на название канала)\n\n` +
-            `**!notify set HTTP-АДРЕС-КАНАЛА ${dataStorage.SETTING_STREAM_START_MESSAGE} ` +
+            `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} HTTP-АДРЕС-КАНАЛА ` +
             `Стрим на канале {channel} начался** - ` +
             `устанавливает собщение для оповещения о начале стрима конкретного канала. ` +
             `Замените HTTP-АДРЕС-КАНАЛА на реальный адрес канала` +
