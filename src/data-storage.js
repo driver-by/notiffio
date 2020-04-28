@@ -9,6 +9,7 @@ class DataStorage {
             throw new Error('DataStorage.constructor dbname is required');
         }
         this.SUBSCRIPTION_NAME_DELIMITER = '/';
+        this.SETTING_STREAM_START_MESSAGE = 'streamStart';
         this._dbname = dbname;
         this._init();
     }
@@ -214,6 +215,20 @@ class DataStorage {
         return false;
     }
 
+    getSettingMessageStreamStart(serverId, subscriptionName) {
+        console.log('getSettingMessageStreamStart', serverId, subscriptionName);
+        return this._serverSubscriptionSettingsGet(serverId, subscriptionName, this.SETTING_STREAM_START_MESSAGE) ||
+            this._serverSettingsGet(serverId, this.SETTING_STREAM_START_MESSAGE);
+    }
+
+    updateSettingMessageStreamStart(serverId, text, subscriptionName) {
+        if (subscriptionName) {
+            return this._serverSubscriptionSettingSet(serverId, subscriptionName, this.SETTING_STREAM_START_MESSAGE, text);
+        } else {
+            return this._serverSettingSet(serverId, this.SETTING_STREAM_START_MESSAGE, text);
+        }
+    }
+
     _init() {
         this._db = lowdb(new FileSync(this._dbname));
     }
@@ -254,6 +269,64 @@ class DataStorage {
             .find({id: serverId})
             .value();
     }
+
+    _serverSettingsGet(serverId, settingName) {
+        const server = this._serverGet(serverId);
+
+        if (server && settingName) {
+            return server.settings[settingName]
+        } else {
+            return server ? server.settings : null;
+        }
+    }
+
+    _serverSubscriptionSettingsGet(serverId, subscriptionName, settingName) {
+        const server = this._serverGet(serverId);
+
+        if (!server || !server.subscriptions) {
+            return null;
+        }
+        const subscription = server.subscriptions.find(s => s.name === subscriptionName);
+        if (subscription && subscription.settings && settingName) {
+            return subscription.settings[settingName];
+        } else {
+            return subscription ? subscription.settings : null;
+        }
+    }
+
+    _serverSettingSet(serverId, settingName, value) {
+        const server = this._serverGet(serverId);
+
+        server.settings = server.settings || {};
+        server.settings[settingName] = value;
+        this._db.get('servers')
+            .find({id: serverId})
+            .assign(server)
+            .write();
+
+        return value;
+    }
+
+    _serverSubscriptionSettingSet(serverId, subscriptionName, settingName, value) {
+        const server = this._serverGet(serverId);
+
+        if (!server || !server.subscriptions) {
+            return null;
+        }
+        const subscription = server.subscriptions.find(s => s.name === subscriptionName);
+        if (!subscription) {
+            return null;
+        }
+        subscription.settings = subscription.settings || {};
+        subscription.settings[settingName] = value;
+        this._db.get('servers')
+            .find({id: serverId})
+            .assign(server)
+            .write();
+
+        return value;
+    }
+
 }
 
 module.exports = DataStorage;
