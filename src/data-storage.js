@@ -273,8 +273,8 @@ class DataStorage {
     _serverSettingsGet(serverId, settingName) {
         const server = this._serverGet(serverId);
 
-        if (server && settingName) {
-            return server.settings[settingName]
+        if (settingName) {
+            return server && server.settings && server.settings[settingName];
         } else {
             return server ? server.settings : null;
         }
@@ -287,8 +287,8 @@ class DataStorage {
             return null;
         }
         const subscription = server.subscriptions.find(s => s.name === subscriptionName);
-        if (subscription && subscription.settings && settingName) {
-            return subscription.settings[settingName];
+        if (settingName) {
+            return subscription && subscription.settings && subscription.settings[settingName];
         } else {
             return subscription ? subscription.settings : null;
         }
