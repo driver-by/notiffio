@@ -216,7 +216,6 @@ class DataStorage {
     }
 
     getSettingMessageStreamStart(serverId, subscriptionName) {
-        console.log('getSettingMessageStreamStart', serverId, subscriptionName);
         return this._serverSubscriptionSettingsGet(serverId, subscriptionName, this.SETTING_STREAM_START_MESSAGE) ||
             this._serverSettingsGet(serverId, this.SETTING_STREAM_START_MESSAGE);
     }
