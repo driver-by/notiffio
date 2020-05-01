@@ -5,6 +5,7 @@ const process = function(command, msg, dataStorage) {
         `**!notify list** - список всех добавленных оповещений\n` +
         `**!notify remove** - удалить оповещения с канала\n` +
         `**!notify remove all** - удалить оповещения по всему серверу\n` +
+        `**!notify set** - помощь по командам настройки\n` +
         `**!notify leave** - выгнать бота с сервера\n`;
 
     msg.channel.send(text);

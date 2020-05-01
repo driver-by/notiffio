@@ -10,6 +10,11 @@ class DataStorage {
         }
         this.SUBSCRIPTION_NAME_DELIMITER = '/';
         this.SETTING_STREAM_START_MESSAGE = 'streamStart';
+        this.SETTING_STREAM_STOP_MESSAGE = 'streamStop';
+        this.SETTING_STREAM_PROCEED_MESSAGE = 'streamProceed';
+        this.SETTING_ANNOUNCEMENT_ADD_MESSAGE = 'announcementAdd';
+        this.SETTING_ANNOUNCEMENT_EDIT_MESSAGE = 'announcementEdit';
+        this.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE = 'announcementRemove';
         this._dbname = dbname;
         this._init();
     }
@@ -215,17 +220,21 @@ class DataStorage {
         return false;
     }
 
-    getSettingMessageStreamStart(serverId, subscriptionName) {
-        return this._serverSubscriptionSettingsGet(serverId, subscriptionName, this.SETTING_STREAM_START_MESSAGE) ||
-            this._serverSettingsGet(serverId, this.SETTING_STREAM_START_MESSAGE);
+    getSettingMessage(setting, serverId, subscriptionName) {
+        return this._serverSubscriptionSettingsGet(serverId, subscriptionName, setting) ||
+            this._serverSettingsGet(serverId, setting);
     }
 
-    updateSettingMessageStreamStart(serverId, text, subscriptionName) {
+    updateSettingMessage(setting, serverId, text, subscriptionName) {
         if (subscriptionName) {
-            return this._serverSubscriptionSettingSet(serverId, subscriptionName, this.SETTING_STREAM_START_MESSAGE, text);
+            return this._serverSubscriptionSettingSet(serverId, subscriptionName, setting, text);
         } else {
-            return this._serverSettingSet(serverId, this.SETTING_STREAM_START_MESSAGE, text);
+            return this._serverSettingSet(serverId, setting, text);
         }
+    }
+
+    removeSettingMessage(setting, serverId, subscriptionName) {
+        return this.updateSettingMessage(setting, serverId, undefined, subscriptionName);
     }
 
     _init() {
@@ -297,7 +306,11 @@ class DataStorage {
         const server = this._serverGet(serverId);
 
         server.settings = server.settings || {};
-        server.settings[settingName] = value;
+        if (value === undefined) {
+            delete server.settings[settingName];
+        } else {
+            server.settings[settingName] = value;
+        }
         this._db.get('servers')
             .find({id: serverId})
             .assign(server)
@@ -317,7 +330,11 @@ class DataStorage {
             return null;
         }
         subscription.settings = subscription.settings || {};
-        subscription.settings[settingName] = value;
+        if (value === undefined) {
+            delete subscription.settings[settingName];
+        } else {
+            subscription.settings[settingName] = value;
+        }
         this._db.get('servers')
             .find({id: serverId})
             .assign(server)
