@@ -17,6 +17,9 @@ class Bot {
     constructor() {
         this.DB_FILE = 'db.json';
         this.INTERVAL = 5000;
+        this.START_COLOR = '#43bf35';
+        this.STOP_COLOR = '#a8a8a8';
+        this.ANNOUNCEMENT_COLOR = '#287bba';
         this._init();
     }
 
@@ -100,6 +103,7 @@ class Bot {
 
     _onEvents(service, eventName, params) {
         let msg;
+        let embed;
         let messageCustomizable;
 
         params.servers.forEach(server => {
@@ -115,6 +119,10 @@ class Bot {
                 this._logger.warn(`Channel not found! %s`, server.channelId);
                 return;
             }
+            let isEmbedRemoved = this._dataStorage.getSettingMessage(
+                this._dataStorage.SETTING_EMBED_REMOVE,
+                server.serverId
+            );
             switch (eventName) {
                 case events.EVENT_GO_LIVE:
                     messageCustomizable = this._getMessage(
@@ -124,11 +132,24 @@ class Bot {
                         this._dataStorage.SETTING_STREAM_START_MESSAGE,
                         `@everyone Стрим на канале **{channel}** начался!`,
                     );
-                    msg = `${messageCustomizable}\n` +
-                        `**${params.subscription.title.trim()}**\n` +
-                        `*${params.subscription.game.trim()}*\n`+
-                        `Заходите на ${params.subscription.url}\n` +
-                        `${params.subscription.img}`;
+                    if (messageCustomizable) {
+                        msg = `${messageCustomizable}`;
+                        if (isEmbedRemoved) {
+                            msg += `**${params.subscription.title.trim()}**\n` +
+                                `*${params.subscription.game.trim()}*\n`+
+                                `Заходите на ${params.subscription.url}\n` +
+                                `${params.subscription.img}`;
+                        } else {
+                            embed = new discord.MessageEmbed()
+                                .setColor(this.START_COLOR)
+                                .setTitle(params.subscription.title.trim())
+                                .setURL(params.subscription.url)
+                                .setAuthor(params.subscription.nickname, params.subscription.url)
+                                .addField('Игра:', params.subscription.game.trim(), true)
+                                .addField('Ссылка', params.subscription.url, true)
+                                .setImage(params.subscription.img);
+                        }
+                    }
                     break;
                 case events.EVENT_GO_OFFLINE:
                     messageCustomizable = this._getMessage(
@@ -151,9 +172,19 @@ class Bot {
                         `Стрим на канале **{channel}** продолжается!`,
                     );
                     if (messageCustomizable) {
-                        msg = `${messageCustomizable}\n` +
-                            `**${params.subscription.title.trim()}**\n` +
-                            `*${params.subscription.game.trim()}*\n`;
+                        msg = `${messageCustomizable}`;
+                        if (isEmbedRemoved) {
+                            msg = `\n**${params.subscription.title.trim()}**\n` +
+                                `*${params.subscription.game.trim()}*\n`;
+                        } else {
+                            embed = new discord.MessageEmbed()
+                                .setColor(this.START_COLOR)
+                                .setTitle(params.subscription.title.trim())
+                                .setURL(params.subscription.url)
+                                .setAuthor(params.subscription.nickname, params.subscription.url)
+                                .addField('Игра:', params.subscription.game.trim(), true)
+                                .addField('Ссылка', params.subscription.url, true);
+                        }
                     }
                     break;
                 case events.EVENT_CHANNEL_NOT_FOUND:
@@ -168,12 +199,24 @@ class Bot {
                         `Анонс на канале {channel}:`,
                     );
                     if (messageCustomizable) {
-                        msg = `${messageCustomizable}\n` +
-                            `**${params.broadcast.title.trim()}**\n` +
-                            `*${params.broadcast.game.trim()}*\n`+
-                            `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                            `через ${this._getTimeElapsed(params.broadcast.start)}\n` +
-                            `${params.subscription.img}`;
+                        msg = `${messageCustomizable}`;
+                        if (isEmbedRemoved) {
+                            msg = `\n**${params.broadcast.title.trim()}**\n` +
+                                `*${params.broadcast.game.trim()}*\n`+
+                                `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                                `через ${this._getTimeElapsed(params.broadcast.start)}\n` +
+                                `${params.subscription.img}`;
+                        } else {
+                            embed = new discord.MessageEmbed()
+                                .setColor(this.ANNOUNCEMENT_COLOR)
+                                .setTitle(params.subscription.title.trim())
+                                .setURL(params.subscription.url)
+                                .setAuthor(params.subscription.nickname, params.subscription.url)
+                                .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск) (через ${this._getTimeElapsed(params.broadcast.start)})`)
+                                .addField('Игра:', params.subscription.game.trim(), true)
+                                .addField('Ссылка', params.subscription.url, true)
+                                .setImage(params.subscription.img);
+                        }
                     }
                     break;
                 case events.EVENT_BROADCAST_CHANGE:
@@ -185,21 +228,44 @@ class Bot {
                         `Анонс на канале {channel} изменен:`,
                     );
                     if (messageCustomizable) {
-                        msg = `${messageCustomizable}\n`;
-                        msg += `**${params.broadcast.title.trim()}**\n`;
-                        if (params.broadcast.game !== params.broadcastPrevious.game) {
-                            msg += `~~${params.broadcastPrevious.game.trim()}~~ ` +
-                                `**${params.broadcast.game.trim()}**\n`;
+                        msg = `${messageCustomizable}`;
+                        if (isEmbedRemoved) {
+                            msg += `\n**${params.broadcast.title.trim()}**\n`;
+                            if (params.broadcast.game !== params.broadcastPrevious.game) {
+                                msg += `~~${params.broadcastPrevious.game.trim()}~~ ` +
+                                    `**${params.broadcast.game.trim()}**\n`;
+                            } else {
+                                msg += `**${params.broadcast.game.trim()}**\n`;
+                            }
+                            if (params.broadcast.start !== params.broadcastPrevious.start) {
+                                msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
+                                    `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                                    `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
+                            } else {
+                                msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                                    `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
+                            }
                         } else {
-                            msg += `**${params.broadcast.game.trim()}**\n`;
-                        }
-                        if (params.broadcast.start !== params.broadcastPrevious.start) {
-                            msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
-                                `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
-                        } else {
-                            msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
+                            embed = new discord.MessageEmbed()
+                                .setColor(this.ANNOUNCEMENT_COLOR)
+                                .setTitle(params.broadcast.title.trim())
+                                .setURL(params.subscription.url)
+                                .setAuthor(params.subscription.nickname, params.subscription.url)
+                            if (params.broadcast.start !== params.broadcastPrevious.start) {
+                                embed.addField(`Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
+                                    `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                                    `через ${this._getTimeElapsed(params.broadcast.start)}`, true);
+                            } else {
+                                embed.addField(`Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                                    `через ${this._getTimeElapsed(params.broadcast.start)}`, true);
+                            }
+                            if (params.broadcast.game !== params.broadcastPrevious.game) {
+                                embed.addField('Игра:', `~~${params.broadcastPrevious.game.trim()}~~ **${params.broadcast.game.trim()}**`, true);
+                            } else {
+                                embed.addField('Игра:', `**${params.broadcast.game.trim()}**`, true);
+                            }
+                            embed.addField('Ссылка', params.subscription.url, true)
+                                .setImage(params.subscription.img);
                         }
                     }
                     break;
@@ -212,15 +278,28 @@ class Bot {
                         `Анонс на канале {channel} отменен`,
                     );
                     if (messageCustomizable) {
-                        msg = `${messageCustomizable}` +
-                            `**${params.broadcastPrevious.title.trim()}** ` +
+                        msg = `${messageCustomizable}`;
+                        if (isEmbedRemoved) {
+                            msg += `\n**${params.broadcastPrevious.title.trim()}** ` +
                             `(*${params.broadcastPrevious.game.trim()}*)`;
+                        } else {
+                            embed = new discord.MessageEmbed()
+                                .setColor(this.STOP_COLOR)
+                                .setTitle(params.broadcastPrevious.title.trim())
+                                .setURL(params.subscription.url)
+                                .setAuthor(params.subscription.nickname, params.subscription.url)
+                                .addField('Игра:', params.broadcastPrevious.game.trim(), true);
+                        }
                     }
                     break;
             }
             if (msg) {
                 this._logger.info(msg);
                 channel.send(msg);
+                if (embed) {
+                    channel.send(embed);
+                    this._logger.info(embed.toString());
+                }
             }
         });
     }

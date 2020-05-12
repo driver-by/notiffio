@@ -15,6 +15,8 @@ class DataStorage {
         this.SETTING_ANNOUNCEMENT_ADD_MESSAGE = 'announcementAdd';
         this.SETTING_ANNOUNCEMENT_EDIT_MESSAGE = 'announcementEdit';
         this.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE = 'announcementRemove';
+        this.SETTING_EMBED_ALLOW = 'embedsPlus';
+        this.SETTING_EMBED_REMOVE = 'embedsMinus';
         this._dbname = dbname;
         this._init();
     }

@@ -4,18 +4,18 @@ const DEFAULT_COMMAND = 'default';
 const process = function(command, msg, dataStorage) {
     let text;
     if (command.params.length) {
-        switch (command.params[0]) {
+        const setting = command.params[0];
+        switch (setting) {
             case dataStorage.SETTING_STREAM_START_MESSAGE:
             case dataStorage.SETTING_STREAM_STOP_MESSAGE:
             case dataStorage.SETTING_STREAM_PROCEED_MESSAGE:
             case dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE:
             case dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE:
             case dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE:
-                const setting = command.params[0];
                 let result;
                 let setTextTo;
                 if (command.params[1] && command.params[1].startsWith('http')) {
-                    // Empty string by default means "don't sohw this notification"
+                    // Empty string by default means "don't show this notification"
                     setTextTo = command.params.slice(2).join(' ') || '';
                     const channel = helper.getServiceInfo(command.params[1]);
                     const subscriptionName = dataStorage.getSubscriptionName(
@@ -54,11 +54,29 @@ const process = function(command, msg, dataStorage) {
                 if (setTextTo === DEFAULT_COMMAND) {
                     text = `Настройка выставлена по-умолчанию`;
                 } else if (result === setTextTo) {
-                    // Success
-                    text = `Настройка сохранена`;
+                    if (setTextTo === '') {
+                        text = `Сообщение больше показываться не будет (передан пустой текст)`;
+                    } else {
+                        text = `Настройка сохранена`;
+                    }
                 } else {
                     text = `Не удалось сохранить, проверьте название канала`;
                 }
+                break;
+            case dataStorage.SETTING_EMBED_REMOVE:
+                dataStorage.updateSettingMessage(
+                    setting,
+                    msg.guild.id,
+                    true,
+                );
+                text = `Embed сообщения отключены`;
+                break;
+            case dataStorage.SETTING_EMBED_ALLOW:
+                dataStorage.removeSettingMessage(
+                    dataStorage.SETTING_EMBED_REMOVE,
+                    msg.guild.id,
+                );
+                text = `Embed сообщения включены`;
                 break;
             default:
                 text = `Неверная команда, введите **!notify set** для просмотра помощи`;
@@ -74,14 +92,17 @@ const process = function(command, msg, dataStorage) {
             `устанавливает собщение для оповещения о начале стрима конкретного канала. ` +
             `Замените HTTP-АДРЕС-КАНАЛА на реальный адрес канала\n\n` +
             `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE}** (пустой текст) - не выводить оповещение\n` +
-            `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} default** - устанавливает опять значение по-умолчанию\n\n` +
+            `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} default** - устанавливает значение по-умолчанию\n\n` +
             `*Все доступные настройки:*\n` +
             `**${dataStorage.SETTING_STREAM_START_MESSAGE}** - сообщение о начале стрима\n` +
             `**${dataStorage.SETTING_STREAM_STOP_MESSAGE}** - сообщение об окончании стрима\n` +
             `**${dataStorage.SETTING_STREAM_PROCEED_MESSAGE}** - сообщение о продолжении стрима\n` +
             `**${dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE}** - новый анонс\n` +
             `**${dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE}** - изменение анонса\n` +
-            `**${dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE}** - отмена анонса\n`;
+            `**${dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE}** - отмена анонса\n\n` +
+            `Другие настройки:\n` +
+            `**!notify set ${dataStorage.SETTING_EMBED_REMOVE}** - отменить использование Embed сообщений\n` +
+            `**!notify set ${dataStorage.SETTING_EMBED_ALLOW}** - разрешить использование Embed сообщений`;
     }
 
     msg.channel.send(text);
