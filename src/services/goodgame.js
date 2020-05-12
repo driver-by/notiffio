@@ -45,6 +45,7 @@ class GoodgameService extends StreamingService {
                     result.push(new ChannelDetails({
                         name: channelData.channelkey,
                         nickname: channelData.streamer ? channelData.streamer.nickname : null,
+                        avatar: channelData.streamer ? channelData.streamer.avatar : null,
                         id: channelData.id,
                         status: channelData.status ? STATUS_LIVE : STATUS_DEAD,
                         title: channelData.title,

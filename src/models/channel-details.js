@@ -1,5 +1,5 @@
 class ChannelDetails {
-    constructor({name, nickname, id, status, title, game, viewers, emdebCode, img, thumb, description, url, broadcast}) {
+    constructor({name, nickname, id, status, title, game, viewers, emdebCode, img, thumb, description, url, broadcast, avatar}) {
         this.name = name;
         this.nickname = nickname;
         this.id = id;
@@ -13,6 +13,7 @@ class ChannelDetails {
         this.description = description;
         this.url = url;
         this.broadcast = broadcast;
+        this.avatar = avatar;
     }
 }
 
