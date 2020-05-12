@@ -295,10 +295,9 @@ class Bot {
             }
             if (msg) {
                 this._logger.info(msg);
-                channel.send(msg);
+                channel.send(msg, embed);
                 if (embed) {
-                    channel.send(embed);
-                    this._logger.info(embed.toString());
+                    this._logger.info(`${embed.title} ${embed.fields.toString()}`);
                 }
             }
         });
