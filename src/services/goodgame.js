@@ -42,6 +42,10 @@ class GoodgameService extends StreamingService {
                     if (channelData.poster && !channelData.poster.startsWith('http')) {
                         channelData.poster = 'https://goodgame.ru' + channelData.poster;
                     }
+                    if (channelData.streamer && channelData.streamer.avatar &&
+                        !channelData.streamer.avatar.startsWith('http')) {
+                        channelData.streamer.avatar = 'https://goodgame.ru' + channelData.streamer.avatar;
+                    }
                     result.push(new ChannelDetails({
                         name: channelData.channelkey,
                         nickname: channelData.streamer ? channelData.streamer.nickname : null,
