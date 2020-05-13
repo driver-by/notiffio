@@ -212,7 +212,7 @@ class Bot {
                                 .setTitle(params.subscription.title.trim())
                                 .setURL(params.subscription.url)
                                 .setAuthor(params.subscription.nickname, params.subscription.url)
-                                .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск) (через ${this._getTimeElapsed(params.broadcast.start)})`)
+                                .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск), через ${this._getTimeElapsed(params.broadcast.start)}`)
                                 .addField('Игра:', params.subscription.game.trim(), true)
                                 .addField('Ссылка', params.subscription.url, true)
                                 .setImage(params.subscription.img);
