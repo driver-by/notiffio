@@ -144,9 +144,9 @@ class Bot {
                                 .setColor(this.START_COLOR)
                                 .setTitle(params.subscription.title.trim())
                                 .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.url)
-                                .addField('Игра:', params.subscription.game.trim(), true)
-                                .addField('Ссылка', params.subscription.url, true)
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
+                                .addField('Игра:', params.subscription.game.trim())
+                                .addField('Ссылка', params.subscription.url)
                                 .setImage(params.subscription.img);
                         }
                     }
@@ -181,9 +181,9 @@ class Bot {
                                 .setColor(this.START_COLOR)
                                 .setTitle(params.subscription.title.trim())
                                 .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.url)
-                                .addField('Игра:', params.subscription.game.trim(), true)
-                                .addField('Ссылка', params.subscription.url, true);
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
+                                .addField('Игра:', params.subscription.game.trim())
+                                .addField('Ссылка', params.subscription.url);
                         }
                     }
                     break;
@@ -211,10 +211,10 @@ class Bot {
                                 .setColor(this.ANNOUNCEMENT_COLOR)
                                 .setTitle(params.subscription.title.trim())
                                 .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.url)
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
                                 .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск), через ${this._getTimeElapsed(params.broadcast.start)}`)
-                                .addField('Игра:', params.subscription.game.trim(), true)
-                                .addField('Ссылка', params.subscription.url, true)
+                                .addField('Игра:', params.subscription.game.trim())
+                                .addField('Ссылка', params.subscription.url)
                                 .setImage(params.subscription.img);
                         }
                     }
@@ -250,21 +250,21 @@ class Bot {
                                 .setColor(this.ANNOUNCEMENT_COLOR)
                                 .setTitle(params.broadcast.title.trim())
                                 .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.url)
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
                             if (params.broadcast.start !== params.broadcastPrevious.start) {
                                 embed.addField(`Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
                                     `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                    `через ${this._getTimeElapsed(params.broadcast.start)}`, true);
+                                    `через ${this._getTimeElapsed(params.broadcast.start)}`);
                             } else {
                                 embed.addField(`Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                    `через ${this._getTimeElapsed(params.broadcast.start)}`, true);
+                                    `через ${this._getTimeElapsed(params.broadcast.start)}`);
                             }
                             if (params.broadcast.game !== params.broadcastPrevious.game) {
-                                embed.addField('Игра:', `~~${params.broadcastPrevious.game.trim()}~~ **${params.broadcast.game.trim()}**`, true);
+                                embed.addField('Игра:', `~~${params.broadcastPrevious.game.trim()}~~ **${params.broadcast.game.trim()}**`);
                             } else {
-                                embed.addField('Игра:', `**${params.broadcast.game.trim()}**`, true);
+                                embed.addField('Игра:', `**${params.broadcast.game.trim()}**`);
                             }
-                            embed.addField('Ссылка', params.subscription.url, true)
+                            embed.addField('Ссылка', params.subscription.url)
                                 .setImage(params.subscription.img);
                         }
                     }
@@ -287,8 +287,8 @@ class Bot {
                                 .setColor(this.STOP_COLOR)
                                 .setTitle(params.broadcastPrevious.title.trim())
                                 .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.url)
-                                .addField('Игра:', params.broadcastPrevious.game.trim(), true);
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
+                                .addField('Игра:', params.broadcastPrevious.game.trim());
                         }
                     }
                     break;
