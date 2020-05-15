@@ -143,8 +143,7 @@ class Bot {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.START_COLOR)
                                 .setTitle(params.subscription.title.trim())
-                                .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                                 .addField('Игра:', params.subscription.game.trim())
                                 .addField('Ссылка', params.subscription.url)
                                 .setImage(params.subscription.img);
@@ -180,8 +179,7 @@ class Bot {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.START_COLOR)
                                 .setTitle(params.subscription.title.trim())
-                                .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                                 .addField('Игра:', params.subscription.game.trim())
                                 .addField('Ссылка', params.subscription.url);
                         }
@@ -210,8 +208,7 @@ class Bot {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.ANNOUNCEMENT_COLOR)
                                 .setTitle(params.subscription.title.trim())
-                                .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                                 .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск), через ${this._getTimeElapsed(params.broadcast.start)}`)
                                 .addField('Игра:', params.subscription.game.trim())
                                 .addField('Ссылка', params.subscription.url)
@@ -249,8 +246,7 @@ class Bot {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.ANNOUNCEMENT_COLOR)
                                 .setTitle(params.broadcast.title.trim())
-                                .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                             if (params.broadcast.start !== params.broadcastPrevious.start) {
                                 embed.addField(`Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
                                     `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
@@ -286,8 +282,7 @@ class Bot {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.STOP_COLOR)
                                 .setTitle(params.broadcastPrevious.title.trim())
-                                .setURL(params.subscription.url)
-                                .setAuthor(params.subscription.nickname, params.subscription.avatar)
+                                .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                                 .addField('Игра:', params.broadcastPrevious.game.trim());
                         }
                     }
