@@ -16,6 +16,7 @@ class StreamingService extends BaseService {
         this.NOT_CHANGE_TO_DEAD_WITHIN = 60 * 1000;
         this.NOTIFICATION_EXPIRED = 10 * 60 * 1000;
         this.LIVE_AGAIN_WITHIN = 60 * 60 * 1000;
+        this.REMOVE_BROADCAST_AFTER = 10 * 60 * 1000;
     }
 
     async getChannelStatuses(channels) {
@@ -99,27 +100,41 @@ class StreamingService extends BaseService {
                 }
             }
             // Check for broadcasts changes
+            // Goodgame returns only one broadcast even if there are more.
+            // Save broadcasts in array to prevent multiple events because of few broadcast changes.
             let eventName;
-            const savedBroadcast = savedData.lastInfo ? savedData.lastInfo.broadcast : null;
+            let savedBroadcast;
+            // Fallback broadcasts array from last info to prevent migration
+            if (savedData.lastInfo && savedData.lastInfo.broadcast && !savedData.broadcasts) {
+                savedData.broadcasts = [savedData.lastInfo.broadcast];
+            }
+            if (savedData.broadcasts) {
+                savedData.broadcasts = this._removeOldBroadcasts(savedData.broadcasts);
+                savedBroadcast = savedData.broadcasts.find(b => this._broadcastEquals(b, subscription.broadcast));
+            } else {
+                savedData.broadcasts = [];
+            }
+            if (!savedBroadcast) {
+                savedData.broadcasts.push(subscription.broadcast);
+            }
+
             if (subscription.broadcast && !savedBroadcast) {
                 // Send "Add" only if start is in future
-                if (subscription.broadcast.start > Date.now()) {
+                if (subscription.broadcast.start > now) {
                     eventName = events.EVENT_BROADCAST_ADD;
                 }
-            } else if (!subscription.broadcast && savedBroadcast) {
+            } else if (!subscription.broadcast && savedData.broadcasts.length) {
+                savedBroadcast = savedData.broadcasts[savedData.broadcasts.length - 1];
                 // Send "Remove" only if start was in future, otherwise it was naturally finished
-                if (savedBroadcast.start > Date.now()) {
+                if (savedBroadcast.start > now) {
                     eventName = events.EVENT_BROADCAST_REMOVE;
                 }
-            } else if (subscription.broadcast && savedBroadcast && (
-                    subscription.broadcast.start !== savedBroadcast.start ||
-                    subscription.broadcast.game !== savedBroadcast.game
-                )) {
+                savedData.broadcasts = [];
+            } else if (subscription.broadcast && savedBroadcast &&
+                subscription.broadcast.start !== savedBroadcast.start) {
                 // Send "Change" only if start was in future, otherwise it was naturally finished
-                if (savedBroadcast.start > Date.now()) {
+                if (savedBroadcast.start > now) {
                     eventName = events.EVENT_BROADCAST_CHANGE;
-                } else {
-                    eventName = events.EVENT_BROADCAST_ADD;
                 }
             }
             if (eventName && !skipNotificationAsItIsExpired) {
@@ -135,6 +150,17 @@ class StreamingService extends BaseService {
             savedData.lastInfo = subscription;
             this._dataStorage.updateSubscription(savedData.name, savedData)
         });
+    }
+
+    _broadcastEquals(b1, b2) {
+        return b1.start === b2.start || b1.title === b2.title;
+    }
+
+    _removeOldBroadcasts(broadcasts) {
+        if (!broadcasts) {
+            return broadcasts;
+        }
+        return broadcasts.filter(b => b.start > Date.now() - this.REMOVE_BROADCAST_AFTER);
     }
 
     _emitEvent(eventName, params) {

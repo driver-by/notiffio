@@ -297,7 +297,7 @@ class Bot {
                 this._logger.info(msg);
                 channel.send(msg, embed);
                 if (embed) {
-                    this._logger.info(`${embed.title} ${embed.fields.toString()}`);
+                    this._logger.info(`${embed.title} ${embed.fields.reduce((acc, val) => `${acc}, ${val.name}: ${val.value}`, '')}`);
                 }
             }
         });
