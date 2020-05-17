@@ -320,7 +320,7 @@ class Bot {
      * @private
      */
     _getTimeFormatted(timestamp) {
-        const moscowOffset = '-180';
+        const moscowOffset = '180';
         if (!timestamp) {
             return '';
         }
