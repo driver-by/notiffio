@@ -130,8 +130,10 @@ class StreamingService extends BaseService {
                     eventName = events.EVENT_BROADCAST_REMOVE;
                 }
                 savedData.broadcasts = [];
-            } else if (subscription.broadcast && savedBroadcast &&
-                subscription.broadcast.start !== savedBroadcast.start) {
+            } else if (subscription.broadcast && savedBroadcast && (
+                    subscription.broadcast.start !== savedBroadcast.start ||
+                    subscription.broadcast.game !== savedBroadcast.game
+                )) {
                 // Send "Change" only if start was in future, otherwise it was naturally finished
                 if (savedBroadcast.start > now) {
                     eventName = events.EVENT_BROADCAST_CHANGE;
@@ -144,6 +146,12 @@ class StreamingService extends BaseService {
                     subscription,
                     servers: savedData.servers,
                 });
+            }
+            if (savedBroadcast) {
+                // Update saved data about broadcast
+                savedBroadcast.start = subscription.broadcast.start;
+                savedBroadcast.title = subscription.broadcast.title;
+                savedBroadcast.game = subscription.broadcast.game;
             }
 
             savedData.lastCheck = now;
