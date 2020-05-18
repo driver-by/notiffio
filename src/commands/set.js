@@ -91,7 +91,7 @@ const process = function(command, msg, dataStorage) {
             `Стрим на канале {channel} начался** - ` +
             `устанавливает собщение для оповещения о начале стрима конкретного канала. ` +
             `Замените HTTP-АДРЕС-КАНАЛА на реальный адрес канала\n\n` +
-            `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE}** (пустой текст) - не выводить оповещение\n` +
+            `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE}** - не выводить оповещение (т.е. передается пустой текст)\n` +
             `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} default** - устанавливает значение по-умолчанию\n\n` +
             `*Все доступные настройки:*\n` +
             `**${dataStorage.SETTING_STREAM_START_MESSAGE}** - сообщение о начале стрима\n` +
