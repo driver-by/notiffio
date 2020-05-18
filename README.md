@@ -14,6 +14,7 @@ Use commands to start:
 - **!notify list** - list of all notifications on a server
 - **!notify remove** - remove all notifications from current channel
 - **!notify remove all** - remove all notifications from entire server
+- **!notify set** - show help for settings (set) command
 - **!notify leave** - kick bot out of a server
 
 ### Self-host this bot
