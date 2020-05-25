@@ -248,11 +248,11 @@ class Bot {
                                 .setTitle(params.broadcast.title.trim())
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                             if (params.broadcast.start !== params.broadcastPrevious.start) {
-                                embed.addField(`Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
+                                embed.addField('Начало:', `~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
                                     `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
                                     `через ${this._getTimeElapsed(params.broadcast.start)}`);
                             } else {
-                                embed.addField(`Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
+                                embed.addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
                                     `через ${this._getTimeElapsed(params.broadcast.start)}`);
                             }
                             if (params.broadcast.game !== params.broadcastPrevious.game) {
