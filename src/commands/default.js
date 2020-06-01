@@ -79,7 +79,7 @@ function processSubscribe(command, msg, dataStorage) {
               ` Вы получите оповещение, когда стрим начнется`;
         }
     } else {
-        text = `Неправильный формат или вебсайт. Попробуйте \`!notify {URL канала}\` (Поддерживаемые вебсайты: goodgame.ru)`;
+        text = `Неправильный формат или вебсайт. Попробуйте \`!notify {URL канала}\` (Поддерживаемые вебсайты: goodgame.ru, twitch.tv)`;
     }
     msg.channel.send(text);
 

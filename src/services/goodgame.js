@@ -1,7 +1,6 @@
 const StreamingService = require('./streaming-service');
 const ChannelDetails = require('../models/channel-details');
 const axios = require('axios');
-const events = require('./events');
 const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 
 const MAX_CHANNELS_PER_REQUEST = 50;
@@ -62,37 +61,6 @@ class GoodgameService extends StreamingService {
                 });
 
             return result;
-        });
-    }
-
-    _processChannelStatuses(subscriptionsToCheck, result) {
-        super._processChannelStatuses(subscriptionsToCheck, result);
-        const notFoundChannels = this._getNotFound(subscriptionsToCheck, result);
-        this._removeNotFound(notFoundChannels);
-    }
-
-    _getNotFound(channelsToBeFound, channels) {
-        const channelsNames = channels.map(c => c.name);
-        return channelsToBeFound.filter(c => channelsNames.indexOf(c.channel) === -1);
-    }
-
-    _removeNotFound(channels) {
-        if (!channels) {
-            return;
-        }
-        channels.forEach(channel => {
-            this._emitEvent(events.EVENT_CHANNEL_NOT_FOUND, {
-                servers: channel.servers,
-                channel: channel.channel,
-            });
-            channel.servers.forEach(server => {
-                this._dataStorage.subscriptionRemove(
-                    server.serverId,
-                    server.channelId,
-                    channel.service,
-                    channel.channel,
-                );
-            });
         });
     }
 

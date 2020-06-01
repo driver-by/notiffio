@@ -4,7 +4,7 @@ function getServiceInfo(url) {
         return null;
     }
 
-    const match = url.match(/^(?:https?:\/\/)?(\w*\.\w*)\/([\w-_.]*)\/([\w-_.]*)\/?/i);
+    const match = url.match(/^(?:https?:\/\/)?(?:www\.)?(\w*\.\w*)\/([\w-_.]*)\/?([\w-_.]*)\/?/i);
     if (!match) {
         return null;
     }
@@ -13,6 +13,9 @@ function getServiceInfo(url) {
     switch (service) {
         case 'goodgame.ru':
             channel = param2;
+            break;
+        case 'twitch.tv':
+            channel = param1;
             break;
     }
     if (!channel) {
