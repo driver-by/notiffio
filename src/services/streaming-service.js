@@ -126,7 +126,7 @@ class StreamingService extends BaseService {
             } else if (!subscription.broadcast && savedData.broadcasts.length) {
                 savedBroadcast = savedData.broadcasts[savedData.broadcasts.length - 1];
                 // Send "Remove" only if start was in future, otherwise it was naturally finished
-                if (savedBroadcast.start > now) {
+                if (savedBroadcast && savedBroadcast.start > now) {
                     eventName = events.EVENT_BROADCAST_REMOVE;
                 }
                 savedData.broadcasts = [];
@@ -158,6 +158,8 @@ class StreamingService extends BaseService {
             savedData.lastInfo = subscription;
             this._dataStorage.updateSubscription(savedData.name, savedData)
         });
+        const notFoundChannels = this._getNotFound(subscriptionsToCheck, result);
+        this._removeNotFound(notFoundChannels);
     }
 
     _broadcastEquals(b1, b2) {
@@ -174,6 +176,32 @@ class StreamingService extends BaseService {
     _emitEvent(eventName, params) {
         super._emitEvent(eventName, params);
     }
+
+    _getNotFound(channelsToBeFound, channels) {
+        const channelsNames = channels.map(c => c.name);
+        return channelsToBeFound.filter(c => channelsNames.indexOf(c.channel) === -1);
+    }
+
+    _removeNotFound(channels) {
+        if (!channels) {
+            return;
+        }
+        channels.forEach(channel => {
+            this._emitEvent(events.EVENT_CHANNEL_NOT_FOUND, {
+                servers: channel.servers,
+                channel: channel.channel,
+            });
+            channel.servers.forEach(server => {
+                this._dataStorage.subscriptionRemove(
+                    server.serverId,
+                    server.channelId,
+                    channel.service,
+                    channel.channel,
+                );
+            });
+        });
+    }
+
 }
 
 module.exports = StreamingService;
