@@ -30,11 +30,12 @@ class TwitchService extends StreamingService {
                             .getStreamsPaginated({
                                 userId: users.map(user => user.id)
                             })
-                            .getAll();
+                            .getNext();
                     })
                     .then(streams => {
                         streamsAll = streamsAll.concat(streams);
                         if (streams && streams.length) {
+                            // TODO: refactor to cache game mappings
                             return this._client.helix.games.getGamesByIds(streams.map(stream => stream.gameId));
                         } else {
                             return [];
