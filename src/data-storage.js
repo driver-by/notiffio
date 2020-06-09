@@ -256,12 +256,12 @@ class DataStorage {
 
     _subscriptionFind(name) {
         return this._db.get('subscriptions')
-            .find(sub => sub.name.toLowerCase() === name.toLowerCase())
+            .find(sub => sub.name && sub.name.toLowerCase() === name.toLowerCase())
     }
 
     _subscriptionRemove(name) {
         this._db.get('subscriptions')
-            .remove(sub => sub.name.toLowerCase() === name.toLowerCase())
+            .remove(sub => sub.name && sub.name.toLowerCase() === name.toLowerCase())
             .write();
     }
 
