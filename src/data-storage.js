@@ -223,8 +223,12 @@ class DataStorage {
     }
 
     getSettingMessage(setting, serverId, subscriptionName) {
-        return this._serverSubscriptionSettingsGet(serverId, subscriptionName, setting) ||
-            this._serverSettingsGet(serverId, setting);
+        const msg = this._serverSubscriptionSettingsGet(serverId, subscriptionName, setting);
+        if (msg === null || msg === undefined) {
+            return this._serverSettingsGet(serverId, setting);
+        }
+
+        return msg;
     }
 
     updateSettingMessage(setting, serverId, text, subscriptionName) {
@@ -286,7 +290,7 @@ class DataStorage {
         if (settingName) {
             return server && server.settings && server.settings[settingName];
         } else {
-            return server ? server.settings : null;
+            return server ? server.settings : undefined;
         }
     }
 
@@ -300,7 +304,7 @@ class DataStorage {
         if (settingName) {
             return subscription && subscription.settings && subscription.settings[settingName];
         } else {
-            return subscription ? subscription.settings : null;
+            return subscription ? subscription.settings : undefined;
         }
     }
 
