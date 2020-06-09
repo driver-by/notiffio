@@ -207,10 +207,10 @@ class Bot {
                         } else {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.ANNOUNCEMENT_COLOR)
-                                .setTitle(params.subscription.title.trim())
+                                .setTitle(params.broadcast.title.trim())
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                                 .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск), через ${this._getTimeElapsed(params.broadcast.start)}`)
-                                .addField('Игра:', params.subscription.game.trim())
+                                .addField('Игра:', params.broadcast.game.trim())
                                 .addField('Ссылка', params.subscription.url)
                                 .setImage(params.subscription.img);
                         }
