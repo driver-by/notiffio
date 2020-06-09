@@ -255,6 +255,9 @@ class DataStorage {
     }
 
     _subscriptionFind(name) {
+        if (!name) {
+            return;
+        }
         return this._db.get('subscriptions')
             .find(sub => sub.name && sub.name.toLowerCase() === name.toLowerCase())
     }
