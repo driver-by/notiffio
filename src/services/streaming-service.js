@@ -46,10 +46,10 @@ class StreamingService extends BaseService {
         super._processChannelStatuses(subscriptionsToCheck, result);
 
         const subscriptionsByName = {};
-        subscriptionsToCheck.forEach(sub => subscriptionsByName[sub.name] = sub);
+        subscriptionsToCheck.forEach(sub => subscriptionsByName[sub.name.toLowerCase()] = sub);
 
         result.forEach((subscription, j) => {
-            const subscriptionName = this._dataStorage.getSubscriptionName(this.name, subscription.name);
+            const subscriptionName = this._dataStorage.getSubscriptionName(this.name, subscription.name).toLowerCase();
             const savedData = Object.assign({}, subscriptionsByName[subscriptionName]);
             const now = Date.now();
             // Don't send notification if last check was too long ago (bot was switched off)
@@ -178,8 +178,8 @@ class StreamingService extends BaseService {
     }
 
     _getNotFound(channelsToBeFound, channels) {
-        const channelsNames = channels.map(c => c.name);
-        return channelsToBeFound.filter(c => channelsNames.indexOf(c.channel) === -1);
+        const channelsNames = channels.map(c => c.name.toLowerCase());
+        return channelsToBeFound.filter(c => channelsNames.indexOf(c.channel.toLowerCase()) === -1);
     }
 
     _removeNotFound(channels) {
