@@ -102,7 +102,15 @@ const process = function(command, msg, dataStorage) {
             `**${dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE}** - отмена анонса\n\n` +
             `Другие настройки:\n` +
             `**!notify set ${dataStorage.SETTING_EMBED_REMOVE}** - отменить использование Embed сообщений\n` +
-            `**!notify set ${dataStorage.SETTING_EMBED_ALLOW}** - разрешить использование Embed сообщений`;
+            `**!notify set ${dataStorage.SETTING_EMBED_ALLOW}** - разрешить использование Embed сообщений` +
+            `Другие "магические" строки кроме {channel}, заменяющиеся в сообщении:\n` +
+            `**{channel}** - название канала\n` +
+            `**{url}** - URL канала\n` +
+            `**{game}** - игра на стриме\n` +
+            `**{title}** - название стрима\n` +
+            `**{broadcast-start}** - время начала трансляции в анонсе (только для анонсов)\n` +
+            `**{broadcast-title** - название анонса (только для анонсов)\n` +
+            `**{broadcast-game}** - игра в анонсе (только для анонсов)\n`;
     }
 
     msg.channel.send(text);
