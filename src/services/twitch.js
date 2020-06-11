@@ -3,7 +3,7 @@ const ChannelDetails = require('../models/channel-details');
 const StreamingService = require('./streaming-service');
 const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 
-const MAX_CHANNELS_PER_REQUEST = 1;
+const MAX_CHANNELS_PER_REQUEST = 20; // Default value of items per-page in twitch API
 
 class TwitchService extends StreamingService {
     constructor(dataStorage) {
