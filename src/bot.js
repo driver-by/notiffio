@@ -101,6 +101,13 @@ class Bot {
         });
     }
 
+    _getDataForMessage(params) {
+        return {
+            subscription: params.subscription,
+            broadcast: params.broadcast,
+        }
+    }
+
     _onEvents(service, eventName, params) {
         let msg;
         let embed;
@@ -128,7 +135,7 @@ class Bot {
                     messageCustomizable = this._getMessage(
                         params.subscription.url,
                         server.serverId,
-                        params.subscription.nickname,
+                        this._getDataForMessage(params),
                         this._dataStorage.SETTING_STREAM_START_MESSAGE,
                         `@everyone Стрим на канале **{channel}** начался!`,
                     );
@@ -154,7 +161,7 @@ class Bot {
                     messageCustomizable = this._getMessage(
                         params.subscription.url,
                         server.serverId,
-                        params.subscription.nickname,
+                        this._getDataForMessage(params),
                         this._dataStorage.SETTING_STREAM_STOP_MESSAGE,
                         `Стрим на канале **{channel}** закончился`,
                     );
@@ -166,7 +173,7 @@ class Bot {
                     messageCustomizable = this._getMessage(
                         params.subscription.url,
                         server.serverId,
-                        params.subscription.nickname,
+                        this._getDataForMessage(params),
                         this._dataStorage.SETTING_STREAM_PROCEED_MESSAGE,
                         `Стрим на канале **{channel}** продолжается!`,
                     );
@@ -192,7 +199,7 @@ class Bot {
                     messageCustomizable = this._getMessage(
                         params.subscription.url,
                         server.serverId,
-                        params.subscription.nickname,
+                        this._getDataForMessage(params),
                         this._dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE,
                         `Анонс на канале {channel}:`,
                     );
@@ -220,7 +227,7 @@ class Bot {
                     messageCustomizable = this._getMessage(
                         params.subscription.url,
                         server.serverId,
-                        params.subscription.nickname,
+                        this._getDataForMessage(params),
                         this._dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE,
                         `Анонс на канале {channel} изменен:`,
                     );
@@ -269,7 +276,7 @@ class Bot {
                     messageCustomizable = this._getMessage(
                         params.subscription.url,
                         server.serverId,
-                        params.subscription.nickname,
+                        this._getDataForMessage(params),
                         this._dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE,
                         `Анонс на канале {channel} отменен`,
                     );
@@ -298,7 +305,7 @@ class Bot {
         });
     }
 
-    _getMessage(url, serverId, nickname, setting, defaultMessage) {
+    _getMessage(url, serverId, data, setting, defaultMessage) {
         const channel = helper.getServiceInfo(url);
         let message = this._dataStorage.getSettingMessage(
             setting,
@@ -308,7 +315,17 @@ class Bot {
         if (message === undefined || message === null) {
             message = defaultMessage;
         }
-        message = message.replace('{channel}', nickname);
+        if (data.subscription) {
+            message = message.replace('{channel}', data.subscription.nickname);
+            message = message.replace('{url}', data.subscription.url);
+            message = message.replace('{game}', data.subscription.game);
+            message = message.replace('{title}', data.subscription.title);
+        }
+        if (data.broadcast) {
+            message = message.replace('{broadcast-start}', this._getTimeFormatted(data.broadcast.start));
+            message = message.replace('{broadcast-title}', data.broadcast.title);
+            message = message.replace('{broadcast-game}', data.broadcast.game);
+        }
 
         return message;
     }
