@@ -3,6 +3,7 @@
 Discord bot, sending notifications to selected channels on different events, using [discord.js](https://github.com/discordjs). Currently supports:
 - goodgame.ru stream start/stop
 - goodgame.ru announcement add/edit/remove
+- twitch.tv stream start/stop
 
 ### Start to use the bot
 
@@ -22,7 +23,10 @@ Use commands to start:
 - Register you bot on [discord developers portal](https://discordapp.com/developers/applications)
 - Download the source code
 - Run `npm install` or `npm ci`
-- Add local.env file to pass ENV param `SECRET_KEY` with token you can find in your Bot settings on dev portal under `Bot` - `Token`
+- Add local.env file to pass ENV params 
+  + `SECRET_KEY` with token you can find in your Bot settings on [dev portal](https://discord.com/developers/applications) under `Bot` - `Token`
+  + `TWITCH_CLIENT_ID` with Twitch API Client ID (visit [dev console](https://dev.twitch.tv/console/apps/create) to register)
+  + `TWITCH_SECRET` with Twitch API secret code
 - Run `node index.js`
 - Use the invitation link for notiffio above to invite the bot to your server, but replace client_id with your `General information` - `Client ID`
 - Enjoy 🤖
