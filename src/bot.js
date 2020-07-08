@@ -314,16 +314,19 @@ class Bot {
         if (message === undefined || message === null) {
             message = defaultMessage;
         }
-        if (data.subscription) {
-            message = message.replace('{channel}', data.subscription.nickname);
-            message = message.replace('{url}', data.subscription.url);
-            message = message.replace('{game}', data.subscription.game);
-            message = message.replace('{title}', data.subscription.title);
-        }
-        if (data.broadcast) {
-            message = message.replace('{broadcast-start}', this._getTimeFormatted(data.broadcast.start));
-            message = message.replace('{broadcast-title}', data.broadcast.title);
-            message = message.replace('{broadcast-game}', data.broadcast.game);
+        message = message.replace('{channel}', data.subscription.nickname);
+        message = message.replace('{url}', data.subscription.url);
+        if (setting === this._dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE ||
+            setting === this._dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE ||
+            setting === this._dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE) {
+            if (data.broadcast) {
+                message = message.replace('{start}', data.broadcast.start ? this._getTimeFormatted(data.broadcast.start) : '');
+                message = message.replace('{title}', data.broadcast.title || '');
+                message = message.replace('{game}', data.broadcast.game || '');
+            }
+        } else if (data.subscription) {
+            message = message.replace('{game}', data.subscription.game || '');
+            message = message.replace('{title}', data.subscription.title || '');
         }
 
         return message;
