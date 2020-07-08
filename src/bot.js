@@ -109,11 +109,10 @@ class Bot {
     }
 
     _onEvents(service, eventName, params) {
-        let msg;
-        let embed;
-        let messageCustomizable;
-
         params.servers.forEach(server => {
+            let msg;
+            let embed;
+            let messageCustomizable;
             const s = this._client.guilds.cache
                 .get(server.serverId);
             if (!s) {
