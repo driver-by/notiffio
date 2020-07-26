@@ -17,6 +17,7 @@ class StreamingService extends BaseService {
         this.NOTIFICATION_EXPIRED = 10 * 60 * 1000;
         this.LIVE_AGAIN_WITHIN = 60 * 60 * 1000;
         this.REMOVE_BROADCAST_AFTER = 10 * 60 * 1000;
+        this.REMOVE_SUBSCRIPTIONS_AFTER_NOT_FOUND_TIMES = 60 * 60 * 1000 / this.UPDATE_INTERVAL; // 60 min
     }
 
     async getChannelStatuses(channels) {
@@ -156,10 +157,11 @@ class StreamingService extends BaseService {
 
             savedData.lastCheck = now;
             savedData.lastInfo = subscription;
+            savedData.notFoundTimes = 0;
             this._dataStorage.updateSubscription(savedData.name, savedData)
         });
         const notFoundChannels = this._getNotFound(subscriptionsToCheck, result);
-        this._removeNotFound(notFoundChannels);
+        this._updateNotFound(notFoundChannels);
     }
 
     _broadcastEquals(b1, b2) {
@@ -182,23 +184,40 @@ class StreamingService extends BaseService {
         return channelsToBeFound.filter(c => channelsNames.indexOf(c.channel.toLowerCase()) === -1);
     }
 
-    _removeNotFound(channels) {
-        if (!channels) {
+    _removeNotFound(channel) {
+        if (!channel) {
             return;
         }
+        this._emitEvent(events.EVENT_CHANNEL_NOT_FOUND, {
+            servers: channel.servers,
+            channel: channel.channel,
+        });
+        channel.servers.forEach(server => {
+            this._dataStorage.subscriptionRemove(
+                server.serverId,
+                server.channelId,
+                channel.service,
+                channel.channel,
+            );
+        });
+    }
+
+    /**
+     * Update notFoundTimes of channel and remove only after a lot of consequent "not found" events
+     * Could be temporary issue with API so don't remove immediately
+     * @param channels
+     * @private
+     */
+    _updateNotFound(channels) {
         channels.forEach(channel => {
-            this._emitEvent(events.EVENT_CHANNEL_NOT_FOUND, {
-                servers: channel.servers,
-                channel: channel.channel,
-            });
-            channel.servers.forEach(server => {
-                this._dataStorage.subscriptionRemove(
-                    server.serverId,
-                    server.channelId,
-                    channel.service,
-                    channel.channel,
-                );
-            });
+            channel.notFoundTimes = channel.notFoundTimes || 0;
+            channel.notFoundTimes++;
+            if (channel.notFoundTimes >= this.REMOVE_SUBSCRIPTIONS_AFTER_NOT_FOUND_TIMES) {
+                this._removeNotFound(channel);
+            } else {
+                channel.lastCheck = Date.now();
+                this._dataStorage.updateSubscription(channel.name, channel);
+            }
         });
     }
 
