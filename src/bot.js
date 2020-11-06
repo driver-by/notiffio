@@ -16,7 +16,7 @@ class Bot {
 
     constructor() {
         this.DB_FILE = 'db.json';
-        this.INTERVAL = 5000;
+        this.INTERVAL = process.env.INTERVAL || 10000;
         this.START_COLOR = '#43bf35';
         this.STOP_COLOR = '#a8a8a8';
         this.ANNOUNCEMENT_COLOR = '#287bba';
