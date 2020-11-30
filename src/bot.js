@@ -46,7 +46,13 @@ class Bot {
 
     _getServices(map) {
         return Object.keys(map)
-            .map(i => new map[i](this._dataStorage));
+            .map(i => new map[i](this._dataStorage, this._getStreamingServiceConfig()));
+    }
+
+    _getStreamingServiceConfig() {
+        return {
+            UPDATE_INTERVAL: process.env.UPDATE_INTERVAL,
+        }
     }
 
     _message(msg) {
