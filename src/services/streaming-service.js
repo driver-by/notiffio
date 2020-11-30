@@ -8,11 +8,11 @@ const logger = require('../logger').getLogger();
  * Don't create instances of this class
  */
 class StreamingService extends BaseService {
-    constructor(dataStorage) {
+    constructor(dataStorage, config = {}) {
         super();
         this.name = 'StreamingService';
         this._dataStorage = dataStorage;
-        this.UPDATE_INTERVAL = 20 * 1000;
+        this.UPDATE_INTERVAL = config.UPDATE_INTERVAL || 30 * 1000;
         this.NOT_CHANGE_TO_DEAD_WITHIN = 60 * 1000;
         this.NOTIFICATION_EXPIRED = 10 * 60 * 1000;
         this.LIVE_AGAIN_WITHIN = 60 * 60 * 1000;
