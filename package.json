@@ -11,15 +11,15 @@
   "author": "Sergei Tomin",
   "license": "MIT",
   "dependencies": {
-    "axios": "^0.19.2",
-    "date-and-time": "^0.13.1",
-    "discord.js": "^12.2.0",
+    "axios": "^0.21.1",
+    "date-and-time": "^0.14.2",
+    "discord.js": "^12.5.1",
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
-    "twitch": "^4.0.10",
-    "winston": "^3.2.1"
+    "twitch": "^4.4.12",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.4"
+    "nodemon": "^2.0.7"
   }
 }
