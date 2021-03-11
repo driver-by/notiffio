@@ -17,6 +17,7 @@
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
     "twitch": "^4.5.0",
+    "twitch-auth": "^4.5.0",
     "winston": "^3.3.3"
   },
   "devDependencies": {
