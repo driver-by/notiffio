@@ -1,6 +1,7 @@
-const TwitchClient = require('twitch').default;
 const ChannelDetails = require('../models/channel-details');
 const StreamingService = require('./streaming-service');
+const {ApiClient} = require('twitch');
+const {ClientCredentialsAuthProvider} = require('twitch-auth');
 const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 
 const MAX_CHANNELS_PER_REQUEST = 20; // Default value of items per-page in twitch API
@@ -9,10 +10,11 @@ class TwitchService extends StreamingService {
     constructor(dataStorage) {
         super(dataStorage);
         this.name = 'twitch.tv';
-        this._client = TwitchClient.withClientCredentials(
+        const authProvider = new ClientCredentialsAuthProvider(
             process.env.TWITCH_CLIENT_ID,
             process.env.TWITCH_SECRET,
         );
+        this._client = new ApiClient({authProvider});
     }
 
     async getChannelStatuses(channels) {
