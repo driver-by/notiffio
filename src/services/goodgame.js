@@ -6,8 +6,8 @@ const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 const MAX_CHANNELS_PER_REQUEST = 50;
 
 class GoodgameService extends StreamingService {
-    constructor(dataStorage) {
-        super(dataStorage);
+    constructor(dataStorage, config = {}) {
+        super(dataStorage, config);
         this.name = 'goodgame.ru';
     }
 

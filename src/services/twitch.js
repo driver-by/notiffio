@@ -7,8 +7,8 @@ const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 const MAX_CHANNELS_PER_REQUEST = 20; // Default value of items per-page in twitch API
 
 class TwitchService extends StreamingService {
-    constructor(dataStorage) {
-        super(dataStorage);
+    constructor(dataStorage, config = {}) {
+        super(dataStorage, config);
         this.name = 'twitch.tv';
         const authProvider = new ClientCredentialsAuthProvider(
             process.env.TWITCH_CLIENT_ID,
