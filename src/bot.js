@@ -213,15 +213,15 @@ class Bot {
                         if (isEmbedRemoved) {
                             msg = `\n**${params.broadcast.title.trim()}**\n` +
                                 `*${params.broadcast.game.trim()}*\n`+
-                                `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                `через ${this._getTimeElapsed(params.broadcast.start)}\n` +
+                                `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск)` +
+                                `${this._getTimeElapsedText(params.broadcast.start)}\n` +
                                 `${params.subscription.img}`;
                         } else {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.ANNOUNCEMENT_COLOR)
                                 .setTitle(this._setDefaultTextIfEmpty(params.broadcast.title.trim()))
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
-                                .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск), через ${this._getTimeElapsed(params.broadcast.start)}`)
+                                .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск)${this._getTimeElapsedText(params.broadcast.start)}`)
                                 .addField('Игра:', this._setDefaultTextIfEmpty(params.broadcast.game.trim()))
                                 .addField('Ссылка', params.subscription.url)
                                 .setImage(params.subscription.img);
@@ -248,11 +248,11 @@ class Bot {
                             }
                             if (params.broadcast.start !== params.broadcastPrevious.start) {
                                 msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
-                                    `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                    `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
+                                    `${this._getTimeFormatted(params.broadcast.start)} (мск)` +
+                                    `${this._getTimeElapsedText(params.broadcast.start)}\n`;
                             } else {
-                                msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                    `через ${this._getTimeElapsed(params.broadcast.start)}\n`;
+                                msg += `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск)` +
+                                    `${this._getTimeElapsedText(params.broadcast.start)}\n`;
                             }
                         } else {
                             embed = new discord.MessageEmbed()
@@ -261,11 +261,11 @@ class Bot {
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                             if (params.broadcast.start !== params.broadcastPrevious.start) {
                                 embed.addField('Начало:', `~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
-                                    `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                    `через ${this._getTimeElapsed(params.broadcast.start)}`);
+                                    `${this._getTimeFormatted(params.broadcast.start)} (мск)` +
+                                    `${this._getTimeElapsedText(params.broadcast.start)}`);
                             } else {
-                                embed.addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск), ` +
-                                    `через ${this._getTimeElapsed(params.broadcast.start)}`);
+                                embed.addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск)` +
+                                    `${this._getTimeElapsedText(params.broadcast.start)}`);
                             }
                             if (params.broadcast.game !== params.broadcastPrevious.game) {
                                 embed.addField('Игра:', `~~${params.broadcastPrevious.game.trim()}~~ **${params.broadcast.game.trim()}**`);
@@ -369,6 +369,16 @@ class Bot {
             return `${hours} ч ${minutes} мин`;
         } else {
             return `${minutes} мин`;
+        }
+    }
+
+    _getTimeElapsedText(timestamp, prefix = ', через ') {
+        const elapsedText = this._getTimeElapsed(timestamp);
+
+        if (elapsedText) {
+            return `${prefix}${elapsedText}`;
+        } else {
+            return '';
         }
     }
 
