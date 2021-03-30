@@ -158,7 +158,7 @@ class Bot {
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                                 .addField('Игра:', this._setDefaultTextIfEmpty(params.subscription.game.trim()))
                                 .addField('Ссылка', params.subscription.url)
-                                .setImage(params.subscription.img);
+                                .setImage(this._generateImageLink(params.subscription.img));
                         }
                     }
                     break;
@@ -224,7 +224,7 @@ class Bot {
                                 .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск)${this._getTimeElapsedText(params.broadcast.start)}`)
                                 .addField('Игра:', this._setDefaultTextIfEmpty(params.broadcast.game.trim()))
                                 .addField('Ссылка', params.subscription.url)
-                                .setImage(params.subscription.img);
+                                .setImage(this._generateImageLink(params.subscription.img));
                         }
                     }
                     break;
@@ -273,7 +273,7 @@ class Bot {
                                 embed.addField('Игра:', this._setDefaultTextIfEmpty(`**${params.broadcast.game.trim()}**`));
                             }
                             embed.addField('Ссылка', params.subscription.url)
-                                .setImage(params.subscription.img);
+                                .setImage(this._generateImageLink(params.subscription.img));
                         }
                     }
                     break;
@@ -384,6 +384,11 @@ class Bot {
 
     _setDefaultTextIfEmpty(text, defaultText = '-') {
         return text ? text : defaultText;
+    }
+
+    _generateImageLink(img) {
+        // Add timestamp param to prevent discord preview caching
+        return `${img}?_=${Date.now()}`;
     }
 }
 
