@@ -36,12 +36,7 @@ class TwitchService extends StreamingService {
                     })
                     .then(streams => {
                         streamsAll = streamsAll.concat(streams);
-                        if (streams && streams.length) {
-                            // TODO: refactor to cache game mappings
-                            return this._client.helix.games.getGamesByIds(streams.map(stream => stream.gameId));
-                        } else {
-                            return [];
-                        }
+                        return this._getGamesByIds(streams.map(stream => stream.gameId));
                     }),
             );
         }
@@ -83,6 +78,52 @@ class TwitchService extends StreamingService {
 
             return result;
         });
+    }
+
+    _getGamesByIds(gameIds) {
+        return new Promise((resolve, reject) => {
+            if (!gameIds) {
+                return [];
+            }
+            const data = this._dataStorage.serviceDataGet(this.name);
+            const games = data && data.games || {};
+            const gamesResult = [];
+            const gamesIdsToSearchInApi = [];
+
+            gameIds.forEach(gameId => {
+                if (games[gameId]) {
+                    gamesResult.push(games[gameId]);
+                } else {
+                    gamesIdsToSearchInApi.push(gameId);
+                }
+            });
+            if (gamesIdsToSearchInApi.length) {
+                this._client.helix.games.getGamesByIds(gamesIdsToSearchInApi)
+                    .then(gamesFromApi => {
+                        this._addGamesToStorage(gamesFromApi);
+                        resolve(gamesResult.concat(gamesFromApi))
+                    }, error => {
+                        resolve(gamesResult);
+                    });
+            } else {
+                resolve(gamesResult);
+            }
+        });
+    }
+
+    _addGamesToStorage(gamesArray) {
+        const data = this._dataStorage.serviceDataGet(this.name) || {};
+        data.games = data.games || {};
+        gamesArray.forEach(game => data.games[game.id] = this._mapGameFromApi(game));
+        this._dataStorage.serviceDataUpdate(this.name, data);
+    }
+
+    _mapGameFromApi(game) {
+        const { id, name } = game;
+        return {
+            id,
+            name,
+        }
     }
 }
 
