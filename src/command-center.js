@@ -21,10 +21,12 @@ class CommandCenter {
 
     _splitCommand(prefix, msg) {
         const reg = new RegExp(`^${prefix}`, 'gi');
-        const arr = msg.replace(reg, '').split(/\s+/);
+        const text = msg.replace(reg, '')
+        const arr = text.split(/\s+/);
         let result = {
             main: arr[0],
             params: arr.slice(1, arr.length),
+            text,
         };
 
         return result;
