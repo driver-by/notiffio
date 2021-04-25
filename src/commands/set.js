@@ -1,6 +1,17 @@
 const helper = require('../services/helper');
 
 const DEFAULT_COMMAND = 'default';
+const removeFirstWord = text => {
+    if (!text) {
+        return '';
+    }
+    const index  = text.indexOf(' ');
+    if (index === -1) {
+        return '';
+    }
+    return text.substr( index + 1);
+}
+
 const process = function(command, msg, dataStorage) {
     let text;
     if (command.params.length) {
@@ -16,7 +27,7 @@ const process = function(command, msg, dataStorage) {
                 let setTextTo;
                 if (command.params[1] && command.params[1].startsWith('http')) {
                     // Empty string by default means "don't show this notification"
-                    setTextTo = command.params.slice(2).join(' ') || '';
+                    setTextTo = removeFirstWord(removeFirstWord(removeFirstWord(command.text)));
                     const channel = helper.getServiceInfo(command.params[1]);
                     const subscriptionName = dataStorage.getSubscriptionName(
                         channel.service,
@@ -37,7 +48,7 @@ const process = function(command, msg, dataStorage) {
                         );
                     }
                 } else {
-                    setTextTo = command.params.slice(1).join(' ');
+                    setTextTo = removeFirstWord(removeFirstWord(command.text));
                     if (setTextTo === DEFAULT_COMMAND) {
                         result = dataStorage.removeSettingMessage(
                             setting,
