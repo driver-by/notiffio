@@ -98,7 +98,14 @@ class Bot {
     }
 
     _updateSubscriptions() {
-        this._services.forEach(service => service.update());
+        const promises = [];
+        if (this._updateSubscriptionsInProgress) {
+            return;
+        }
+        this._updateSubscriptionsInProgress = true;
+        this._services.forEach(service => promises.push(service.update()));
+        Promise.all(promises)
+            .finally(() => this._updateSubscriptionsInProgress = false);
     }
 
     _subscribeToEvents(services) {
