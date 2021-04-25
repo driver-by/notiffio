@@ -3,6 +3,8 @@
 const lowdb = require('lowdb');
 const FileSync = require('lowdb/adapters/FileSync');
 
+const serviceDataTableName = 'serviceData';
+
 class DataStorage {
     constructor(dbname) {
         if (!dbname) {
@@ -45,6 +47,14 @@ class DataStorage {
         this._db.get('servers')
             .remove({id: serverId})
             .write();
+    }
+
+    serviceDataGet(serviceName) {
+        return this._serviceDataGet(serviceName);
+    }
+
+    serviceDataUpdate(serviceName, data) {
+        return this._serviceDataSet(serviceName, data);
     }
 
     subscriptionsGetByLastCheck(lastCheck, service) {
@@ -347,6 +357,22 @@ class DataStorage {
             .write();
 
         return value;
+    }
+
+    _serviceDataGet(serviceName) {
+        const saveServiceName = this._getSafeVariableName(serviceName);
+        return this._db.get(`${serviceDataTableName}.${saveServiceName}`)
+            .value();
+    }
+
+    _serviceDataSet(serviceName, value) {
+        const saveServiceName = this._getSafeVariableName(serviceName);
+        return this._db.set(`${serviceDataTableName}.${saveServiceName}`, value)
+            .write();
+    }
+
+    _getSafeVariableName(varName) {
+        return varName.replace(/[\.]/gi, '');
     }
 
 }
