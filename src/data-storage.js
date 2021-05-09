@@ -202,25 +202,21 @@ class DataStorage {
         });
     }
 
+    subscriptionsGet() {
+        return this._db.get(`subscriptions`)
+            .map(subscription => {
+                return Object.assign(
+                    {},
+                    subscription,
+                    {name: undefined},
+                );
+            })
+            .value();
+    }
+
     updateSubscription(subscriptionName, subscription) {
         this._subscriptionFind(subscriptionName)
             .assign(subscription)
-            .write();
-    }
-
-    /**
-     * Updates the additional info data of subscriptions from the map
-     * @param subscriptionsInfoMap - {subscriptionName: additionalInfo,..}
-     */
-    updateSubscriptionAdditionalInfoMap(subscriptionsInfoMap) {
-        const subscriptionsDb = this._db.get('subscriptions')
-        const subscriptions = subscriptionsDb.value();
-        subscriptions.forEach((subscription, i) => {
-            if (subscriptionsInfoMap[subscription.name]) {
-                subscriptions[i].additionalInfo = subscriptionsInfoMap[subscription.name];
-            }
-        });
-        subscriptionsDb.assign(subscriptions)
             .write();
     }
 
