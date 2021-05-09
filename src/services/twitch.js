@@ -5,6 +5,7 @@ const {ClientCredentialsAuthProvider} = require('twitch-auth');
 const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 
 const MAX_CHANNELS_PER_REQUEST = 20; // Default value of items per-page in twitch API
+const USER_DATA_TIME_OUTDATED = 24 * 60 * 60 * 1000;
 
 class TwitchService extends StreamingService {
     constructor(dataStorage, config = {}) {
@@ -25,7 +26,7 @@ class TwitchService extends StreamingService {
         for (let i = 0; i < channels.length; i += MAX_CHANNELS_PER_REQUEST) {
             const channelsPart = channels.slice(i, i + MAX_CHANNELS_PER_REQUEST);
             promises.push(
-                this._client.helix.users.getUsersByNames(channelsPart)
+                this._getUserDataByName(channelsPart)
                     .then(users => {
                         usersAll = usersAll.concat(users);
                         return this._client.helix.streams
@@ -116,6 +117,55 @@ class TwitchService extends StreamingService {
         data.games = data.games || {};
         gamesArray.forEach(game => data.games[game.id] = this._mapGameFromApi(game));
         this._dataStorage.serviceDataUpdate(this.name, data);
+    }
+
+    async _getUserDataByName(channels) {
+        const channelIds = [];
+        const usersDataAlreadyGot = [];
+        const channelNamesToSearch = [];
+
+        // Find channels without ids and place in channelNamesToSearch
+        // Additional API request is required
+        channels.forEach(channel => {
+            if (this._isUserDataRelevant(channel.additionalInfo)) {
+                channelIds.push(channel.additionalInfo.id);
+                usersDataAlreadyGot.push(channel.additionalInfo);
+            } else {
+                channelNamesToSearch.push(channel.channel);
+            }
+        });
+        const promiseNameSearch = channelNamesToSearch.length
+            ? this._client.helix.users.getUsersByNames(channelNamesToSearch)
+            : Promise.resolve([]);
+
+        return promiseNameSearch.then(users => {
+            this._addUsersToStorage(channelNamesToSearch, users);
+            return users.concat(usersDataAlreadyGot);
+        });
+    }
+
+    _addUsersToStorage(channelNames, usersArray) {
+        const dataMap = {};
+        channelNames.forEach((channelName, i) => {
+            dataMap[this._dataStorage.getSubscriptionName(this.name, channelName)] = this._mapUsersDataToAdditionaData(usersArray[i]);
+        });
+        this._dataStorage.updateSubscriptionAdditionalInfoMap(dataMap);
+    }
+
+    _mapUsersDataToAdditionaData(user) {
+        return {
+            id: user.id,
+            name: user.name,
+            displayName: user.displayName,
+            profilePictureUrl: user.profilePictureUrl,
+            timestamp: Date.now(),
+        };
+    }
+
+    _isUserDataRelevant(additionalInfo) {
+        return additionalInfo
+            && additionalInfo.id
+            && (Date.now() - additionalInfo.timestamp < USER_DATA_TIME_OUTDATED);
     }
 
     _mapGameFromApi(game) {
