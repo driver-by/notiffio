@@ -34,8 +34,9 @@ class StreamingService extends BaseService {
         if (!subscriptionsToCheck || !subscriptionsToCheck.length) {
             return;
         }
+        const channelsToCheck = subscriptionsToCheck.map(sub => sub.channel);
 
-        return this.getChannelStatuses(subscriptionsToCheck)
+        return this.getChannelStatuses(channelsToCheck)
             .then(
                 this._processChannelStatuses.bind(this, subscriptionsToCheck),
                 error => logger.error(`getChannelStatuses error`, error)

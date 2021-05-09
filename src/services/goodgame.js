@@ -17,7 +17,7 @@ class GoodgameService extends StreamingService {
         for (let i = 0; i < channels.length; i += MAX_CHANNELS_PER_REQUEST) {
             const channelsPart = channels.slice(i, i + MAX_CHANNELS_PER_REQUEST);
             const payload = channelsPart.map(channel => {
-                return {url: `https://goodgame.ru/api/4/stream/${channel.channel}`};
+                return {url: `https://goodgame.ru/api/4/stream/${channel}`};
             });
             promises.push(
                 axios.post(`https://goodgame.ru/api/4/combinedRequest`, payload)
