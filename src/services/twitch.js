@@ -139,15 +139,15 @@ class TwitchService extends StreamingService {
             : Promise.resolve([]);
 
         return promiseNameSearch.then(users => {
-            this._addUsersToStorage(channelNamesToSearch, users);
+            this._addUsersToStorage(users);
             return users.concat(usersDataAlreadyGot);
         });
     }
 
-    _addUsersToStorage(channelNames, usersArray) {
+    _addUsersToStorage(usersArray) {
         const dataMap = {};
-        channelNames.forEach((channelName, i) => {
-            dataMap[this._dataStorage.getSubscriptionName(this.name, channelName)] = this._mapUsersDataToAdditionaData(usersArray[i]);
+        usersArray.forEach(user => {
+            dataMap[this._dataStorage.getSubscriptionName(this.name, user.name)] = this._mapUsersDataToAdditionaData(user);
         });
         this._dataStorage.updateSubscriptionAdditionalInfoMap(dataMap);
     }
