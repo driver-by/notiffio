@@ -4,7 +4,7 @@ const {ApiClient} = require('twitch');
 const {ClientCredentialsAuthProvider} = require('twitch-auth');
 const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 
-const MAX_CHANNELS_PER_REQUEST = 20; // Default value of items per-page in twitch API
+const MAX_CHANNELS_PER_REQUEST = 90; // Max of a twitch API is 100
 const USER_DATA_TIME_OUTDATED = 24 * 60 * 60 * 1000;
 
 class TwitchService extends StreamingService {
