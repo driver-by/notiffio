@@ -66,17 +66,19 @@ function processSubscribe(command, msg, dataStorage) {
     const channelId = msg.channel.id;
     const channelName = msg.channel.name;
     const subscribeTo = helper.getServiceInfo(command.main);
-    let isSubscribed;
+    let wasSubscribed = false;
+    let isSubscribed = false;
     let text;
     if (subscribeTo && subscribeTo.channel) {
         const subscriptionName = dataStorage.getSubscriptionName(subscribeTo.service, subscribeTo.channel);
-        isSubscribed = dataStorage.isSubscribed(serverId, channelId, subscriptionName);
-        if (isSubscribed) {
+        wasSubscribed = dataStorage.isSubscribed(serverId, channelId, subscriptionName);
+        if (wasSubscribed) {
             dataStorage.subscriptionRemove(serverId, channelId, subscribeTo.service, subscribeTo.channel);
             text = `Отписались от канала ${subscribeTo.channel} (${subscribeTo.service}).`;
         } else {
             text = `Успешно подписались на канал ${subscribeTo.channel} (${subscribeTo.service}).` +
               ` Вы получите оповещение, когда стрим начнется`;
+            isSubscribed = true;
         }
     } else {
         text = `Неправильный формат или вебсайт. Попробуйте \`!notify {URL канала}\` (Поддерживаемые вебсайты: goodgame.ru, twitch.tv)`;
@@ -84,7 +86,7 @@ function processSubscribe(command, msg, dataStorage) {
     msg.channel.send(text)
         .then(() => {
             // Subscribe only after successful message. Bot could miss permissions for a channel then no need to subscribe
-            if (!isSubscribed) {
+            if (isSubscribed) {
                 dataStorage.subscriptionAdd(serverId, channelId, serverName, channelName, subscribeTo.service, subscribeTo.channel);
             }
         });
