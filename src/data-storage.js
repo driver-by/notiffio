@@ -43,7 +43,7 @@ class DataStorage {
     }
 
     serverRemove(serverId) {
-        this.subscriptionRemove(serverId);
+        this.subscriptionRemoveList(serverId);
         this._db.get('servers')
             .remove({id: serverId})
             .write();
