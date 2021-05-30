@@ -184,7 +184,7 @@ class DataStorage {
             const subDb = this._subscriptionFind(removingSubscription.name);
             let sub = subDb.value();
 
-            if (!sub || !sub.servers || !sub.servers.length) {
+            if (!sub || !sub.servers) {
                 return;
             }
             if (channelId) {
