@@ -97,7 +97,7 @@ const process = function(command, msg, dataStorage) {
             `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} ` +
             `Стрим на канале {channel} начался** - ` +
             `устанавливает собщение для оповещения о начале стрима ` +
-            `({channel} в сообщении автоматически заменяется на название канала)\n\n` +
+            `({channel} в сообщении автоматически заменяется на название канала, см. другие магические строки в конце)\n\n` +
             `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} HTTP-АДРЕС-КАНАЛА ` +
             `Стрим на канале {channel} начался** - ` +
             `устанавливает собщение для оповещения о начале стрима конкретного канала. ` +
@@ -115,6 +115,7 @@ const process = function(command, msg, dataStorage) {
             `**!notify set ${dataStorage.SETTING_EMBED_REMOVE}** - отменить использование Embed сообщений\n` +
             `**!notify set ${dataStorage.SETTING_EMBED_ALLOW}** - разрешить использование Embed сообщений` +
             `Другие "магические" строки кроме {channel}, заменяющиеся в сообщении:\n` +
+            `**{everyone}** - @everyone (чтобы не спамить @everyone сообщениями во время настройки)\n` +
             `**{channel}** - название канала\n` +
             `**{url}** - URL канала\n` +
             `**{game}** - игра на стриме или в анонсе\n` +
