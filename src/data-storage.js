@@ -323,8 +323,12 @@ class DataStorage {
     }
 
     _serverSettingSet(serverId, settingName, value) {
-        const server = this._serverGet(serverId);
+        let server = this._serverGet(serverId);
 
+        if (!server) {
+            this.serverAdd({id: serverId});
+        }
+        server = this._serverGet(serverId);
         server.settings = server.settings || {};
         if (value === undefined) {
             delete server.settings[settingName];
