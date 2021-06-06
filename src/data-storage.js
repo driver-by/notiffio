@@ -43,7 +43,7 @@ class DataStorage {
     }
 
     serverRemove(serverId) {
-        this.subscriptionRemove(serverId);
+        this.subscriptionRemoveList(serverId);
         this._db.get('servers')
             .remove({id: serverId})
             .write();
@@ -184,7 +184,7 @@ class DataStorage {
             const subDb = this._subscriptionFind(removingSubscription.name);
             let sub = subDb.value();
 
-            if (!sub || !sub.servers || !sub.servers.length) {
+            if (!sub || !sub.servers) {
                 return;
             }
             if (channelId) {
@@ -323,8 +323,12 @@ class DataStorage {
     }
 
     _serverSettingSet(serverId, settingName, value) {
-        const server = this._serverGet(serverId);
+        let server = this._serverGet(serverId);
 
+        if (!server) {
+            this.serverAdd({id: serverId});
+        }
+        server = this._serverGet(serverId);
         server.settings = server.settings || {};
         if (value === undefined) {
             delete server.settings[settingName];

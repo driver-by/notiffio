@@ -20,13 +20,14 @@ class Bot {
         this.START_COLOR = '#43bf35';
         this.STOP_COLOR = '#a8a8a8';
         this.ANNOUNCEMENT_COLOR = '#287bba';
+        this.HTTP_PERMISSIONS_ERROR_STATUS = 403;
         this._init();
     }
 
     _init() {
         this._dataStorage = new DataStorage(this.DB_FILE);
         this._commandCenter = new CommandCenter(this._dataStorage);
-        this._client = new discord.Client();
+        this._client = new discord.Client({retryLimit: 5});
         this._client.on('ready', this._ready.bind(this));
         this._client.on('message', this._message.bind(this));
         this._client.on('error', this._error.bind(this));
@@ -129,13 +130,15 @@ class Bot {
             const s = this._client.guilds.cache
                 .get(server.serverId);
             if (!s) {
-                this._logger.warn(`Server not found! %s`, server.serverId);
+                this._logger.warn(`Server not found! %s. Removing it from DB`, server.serverId);
+                this._dataStorage.serverRemove(server.serverId);
                 return;
             }
             const channel = s.channels.cache
                 .get(server.channelId);
             if (!channel) {
-                this._logger.warn(`Channel not found! %s`, server.channelId);
+                this._logger.warn(`Channel not found! %s. Removing it from DB`, server.channelId);
+                this._dataStorage.subscriptionRemoveList(server.serverId, server.channelId);
                 return;
             }
             let isEmbedRemoved = this._dataStorage.getSettingMessage(
@@ -309,7 +312,13 @@ class Bot {
             }
             if (msg) {
                 this._logger.info(msg);
-                channel.send(msg, embed);
+                channel.send(msg, embed)
+                    .catch(error => {
+                        this._logger.error(`Discord send error ${error.httpStatus} ${server.serverId}/${server.channelId}`);
+                        if (error.httpStatus === this.HTTP_PERMISSIONS_ERROR_STATUS) {
+                            this._dataStorage.subscriptionRemoveList(server.serverId, server.channelId);
+                        }
+                    });
                 if (embed) {
                     this._logger.info(`${embed.title} ${embed.fields.reduce((acc, val) => `${acc}, ${val.name}: ${val.value}`, '')}`);
                 }
