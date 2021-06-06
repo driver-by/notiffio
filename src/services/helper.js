@@ -4,7 +4,7 @@ function getServiceInfo(url) {
         return null;
     }
 
-    const match = url.match(/^(?:https?:\/\/)?(?:www\.)?(\w*\.\w*)\/([\w-_.]*)\/?([\w-_.]*)\/?/i);
+    const match = url.match(/^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(\w*\.\w*)\/([\w-_.]*)\/?([\w-_.]*)\/?/i);
     if (!match) {
         return null;
     }
