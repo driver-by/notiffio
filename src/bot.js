@@ -337,6 +337,7 @@ class Bot {
             message = defaultMessage;
         }
         message = message.replace('{channel}', data.subscription.nickname);
+        message = message.replace('{everyone}', '@everyone');
         message = message.replace('{url}', data.subscription.url);
         if (setting === this._dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE ||
             setting === this._dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE ||
