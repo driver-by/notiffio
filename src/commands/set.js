@@ -116,6 +116,7 @@ const process = function(command, msg, dataStorage) {
             `**!notify set ${dataStorage.SETTING_EMBED_ALLOW}** - разрешить использование Embed сообщений` +
             `Другие "магические" строки кроме {channel}, заменяющиеся в сообщении:\n` +
             `**{everyone}** - @everyone (чтобы не спамить @everyone сообщениями во время настройки)\n` +
+            `**{here}** - @here (чтобы не спамить @here сообщениями во время настройки)\n` +
             `**{channel}** - название канала\n` +
             `**{url}** - URL канала\n` +
             `**{game}** - игра на стриме или в анонсе\n` +
