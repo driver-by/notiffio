@@ -158,7 +158,7 @@ class Bot {
                         msg = `${messageCustomizable}`;
                         if (isEmbedRemoved) {
                             msg += `**${params.subscription.title.trim()}**\n` +
-                                `*${params.subscription.game.trim()}*\n`+
+                                `*${params.subscription.game}*\n`+
                                 `Заходите на ${params.subscription.url}\n` +
                                 `${params.subscription.img}`;
                         } else {
@@ -166,7 +166,7 @@ class Bot {
                                 .setColor(this.START_COLOR)
                                 .setTitle(this._setDefaultTextIfEmpty(params.subscription.title.trim()))
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
-                                .addField('Игра:', this._setDefaultTextIfEmpty(params.subscription.game.trim()))
+                                .addField('Игра:', this._setDefaultTextIfEmpty(params.subscription.game))
                                 .addField('Ссылка', params.subscription.url)
                                 .setImage(this._generateImageLink(params.subscription.img));
                         }
@@ -196,13 +196,13 @@ class Bot {
                         msg = `${messageCustomizable}`;
                         if (isEmbedRemoved) {
                             msg = `\n**${params.subscription.title.trim()}**\n` +
-                                `*${params.subscription.game.trim()}*\n`;
+                                `*${params.subscription.game}*\n`;
                         } else {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.START_COLOR)
                                 .setTitle(this._setDefaultTextIfEmpty(params.subscription.title.trim()))
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
-                                .addField('Игра:', this._setDefaultTextIfEmpty(params.subscription.game.trim()))
+                                .addField('Игра:', this._setDefaultTextIfEmpty(params.subscription.game))
                                 .addField('Ссылка', params.subscription.url);
                         }
                     }
@@ -222,7 +222,7 @@ class Bot {
                         msg = `${messageCustomizable}`;
                         if (isEmbedRemoved) {
                             msg = `\n**${params.broadcast.title.trim()}**\n` +
-                                `*${params.broadcast.game.trim()}*\n`+
+                                `*${params.broadcast.game}*\n`+
                                 `Начало в ${this._getTimeFormatted(params.broadcast.start)} (мск)` +
                                 `${this._getTimeElapsedText(params.broadcast.start)}\n` +
                                 `${params.subscription.img}`;
@@ -232,7 +232,7 @@ class Bot {
                                 .setTitle(this._setDefaultTextIfEmpty(params.broadcast.title.trim()))
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
                                 .addField('Начало:', `${this._getTimeFormatted(params.broadcast.start)} (мск)${this._getTimeElapsedText(params.broadcast.start)}`)
-                                .addField('Игра:', this._setDefaultTextIfEmpty(params.broadcast.game.trim()))
+                                .addField('Игра:', this._setDefaultTextIfEmpty(params.broadcast.game))
                                 .addField('Ссылка', params.subscription.url)
                                 .setImage(this._generateImageLink(params.subscription.img));
                         }
@@ -251,10 +251,10 @@ class Bot {
                         if (isEmbedRemoved) {
                             msg += `\n**${params.broadcast.title.trim()}**\n`;
                             if (params.broadcast.game !== params.broadcastPrevious.game) {
-                                msg += `~~${params.broadcastPrevious.game.trim()}~~ ` +
-                                    `**${params.broadcast.game.trim()}**\n`;
+                                msg += `~~${params.broadcastPrevious.game}~~ ` +
+                                    `**${params.broadcast.game}**\n`;
                             } else {
-                                msg += `**${params.broadcast.game.trim()}**\n`;
+                                msg += `**${params.broadcast.game}**\n`;
                             }
                             if (params.broadcast.start !== params.broadcastPrevious.start) {
                                 msg += `Начало в ~~${this._getTimeFormatted(params.broadcastPrevious.start)}~~ ` +
@@ -278,9 +278,9 @@ class Bot {
                                     `${this._getTimeElapsedText(params.broadcast.start)}`);
                             }
                             if (params.broadcast.game !== params.broadcastPrevious.game) {
-                                embed.addField('Игра:', `~~${params.broadcastPrevious.game.trim()}~~ **${params.broadcast.game.trim()}**`);
+                                embed.addField('Игра:', `~~${params.broadcastPrevious.game}~~ **${params.broadcast.game}**`);
                             } else {
-                                embed.addField('Игра:', this._setDefaultTextIfEmpty(`**${params.broadcast.game.trim()}**`));
+                                embed.addField('Игра:', this._setDefaultTextIfEmpty(`**${params.broadcast.game}**`));
                             }
                             embed.addField('Ссылка', params.subscription.url)
                                 .setImage(this._generateImageLink(params.subscription.img));
@@ -299,13 +299,13 @@ class Bot {
                         msg = `${messageCustomizable}`;
                         if (isEmbedRemoved) {
                             msg += `\n**${params.broadcastPrevious.title.trim()}** ` +
-                            `(*${params.broadcastPrevious.game.trim()}*)`;
+                            `(*${params.broadcastPrevious.game}*)`;
                         } else {
                             embed = new discord.MessageEmbed()
                                 .setColor(this.STOP_COLOR)
                                 .setTitle(this._setDefaultTextIfEmpty(params.broadcastPrevious.title.trim()))
                                 .setAuthor(params.subscription.nickname, params.subscription.avatar, params.subscription.url)
-                                .addField('Игра:', this._setDefaultTextIfEmpty(params.broadcastPrevious.game.trim()));
+                                .addField('Игра:', this._setDefaultTextIfEmpty(params.broadcastPrevious.game));
                         }
                     }
                     break;
