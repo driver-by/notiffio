@@ -57,10 +57,21 @@ class DataStorage {
         return this._serviceDataSet(serviceName, data);
     }
 
-    subscriptionsGetByLastCheck(lastCheck, service) {
-        return this._db.get('subscriptions')
-            .filter(subscription => subscription.service === service && subscription.lastCheck < lastCheck)
-            .value();
+    subscriptionsGetByLastCheckAndUpdate(lastCheck, service) {
+        const subscriptionsDb = this._db.get('subscriptions')
+        const subscriptions = subscriptionsDb.value();
+        const result = [];
+        subscriptions.forEach((subscription, i) => {
+            if (subscription.service === service && subscription.lastCheck < lastCheck) {
+                result.push(subscription);
+                // Update lastCheck immediately when getting the list as it happened to get one item twice that led to double notification
+                subscriptions[i].lastCheck = Date.now();
+            }
+        });
+        subscriptionsDb.assign(subscriptions)
+            .write();
+
+        return result;
     }
 
     subscriptionFind(service, channel) {
