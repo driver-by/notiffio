@@ -25,9 +25,8 @@ class StreamingService extends BaseService {
     }
 
     async update() {
-        const now = Date.now();
         const subscriptionsToCheck = this._dataStorage.subscriptionsGetByLastCheckAndUpdate(
-            now - this.UPDATE_INTERVAL,
+            this.UPDATE_INTERVAL,
             this.name,
         );
 

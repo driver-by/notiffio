@@ -57,15 +57,20 @@ class DataStorage {
         return this._serviceDataSet(serviceName, data);
     }
 
-    subscriptionsGetByLastCheckAndUpdate(lastCheck, service) {
+    subscriptionsGetByLastCheckAndUpdate(updateInterval, service) {
+        const lastCheck = Date.now() - updateInterval;
         const subscriptionsDb = this._db.get('subscriptions')
         const subscriptions = subscriptionsDb.value();
         const result = [];
         subscriptions.forEach((subscription, i) => {
-            if (subscription.service === service && subscription.lastCheck < lastCheck) {
+            const lastCheckStartedDiff = subscription.lastCheckStarted
+                ? Date.now() - subscription.lastCheckStarted
+                : Infinity;
+            if (subscription.service === service && subscription.lastCheck < lastCheck
+                && lastCheckStartedDiff >= updateInterval) {
                 result.push(subscription);
-                // Update lastCheck immediately when getting the list as it happened to get one item twice that led to double notification
-                subscriptions[i].lastCheck = Date.now();
+                // Save `lastCheckStarted` to prevent double check of the same item and double notifications
+                subscriptions[i].lastCheckStarted = Date.now();
             }
         });
         subscriptionsDb.assign(subscriptions)
