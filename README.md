@@ -31,4 +31,4 @@ Use commands to start:
 - Use the invitation link for notiffio above to invite the bot to your server, but replace client_id with your `General information` - `Client ID`
 - Enjoy 🤖
 
-Node v12+ is required.
+Node v16+ is required.
