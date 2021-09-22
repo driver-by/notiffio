@@ -27,9 +27,12 @@ class Bot {
     _init() {
         this._dataStorage = new DataStorage(this.DB_FILE);
         this._commandCenter = new CommandCenter(this._dataStorage);
-        this._client = new discord.Client({retryLimit: 5});
+        this._client = new discord.Client({
+            retryLimit: 5,
+            intents: [discord.Intents.FLAGS.GUILDS, discord.Intents.FLAGS.GUILD_MESSAGES]
+        });
         this._client.on('ready', this._ready.bind(this));
-        this._client.on('message', this._message.bind(this));
+        this._client.on('messageCreate', this._message.bind(this));
         this._client.on('error', this._error.bind(this));
         this._client.on('rateLimit', this._rateLimit.bind(this));
         this._client.on('shardDisconnected', this._disconnect.bind(this));
@@ -312,7 +315,7 @@ class Bot {
             }
             if (msg) {
                 this._logger.info(msg);
-                channel.send(msg, embed)
+                channel.send({content: msg, embeds: [embed]})
                     .catch(error => {
                         this._logger.error(`Discord send error ${error.httpStatus} ${server.serverId}/${server.channelId}`);
                         if (error.httpStatus === this.HTTP_PERMISSIONS_ERROR_STATUS) {

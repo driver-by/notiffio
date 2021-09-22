@@ -1,6 +1,6 @@
 {
   "name": "notiffio",
-  "version": "0.4.1",
+  "version": "0.4.5",
   "description": "Get stream start notifications from goodgame.ru, twitch.tv",
   "main": "index.js",
   "scripts": {
@@ -13,14 +13,14 @@
   "dependencies": {
     "axios": "^0.21.2",
     "date-and-time": "^0.14.2",
-    "discord.js": "^12.5.3",
+    "discord.js": "^13.1.0",
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
-    "twitch": "^4.5.5",
-    "twitch-auth": "^4.5.5",
+    "twitch": "^4.6.7",
+    "twitch-auth": "^4.6.7",
     "winston": "^3.3.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "nodemon": "^2.0.12"
   }
 }
