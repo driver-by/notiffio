@@ -315,7 +315,7 @@ class Bot {
             }
             if (msg) {
                 this._logger.info(msg);
-                channel.send({content: msg, embeds: [embed]})
+                channel.send({content: msg, embeds: embed ? [embed] : null})
                     .catch(error => {
                         this._logger.error(`Discord send error ${error.httpStatus} ${server.serverId}/${server.channelId}`);
                         if (error.httpStatus === this.HTTP_PERMISSIONS_ERROR_STATUS) {
