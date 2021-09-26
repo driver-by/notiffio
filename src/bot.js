@@ -28,7 +28,6 @@ class Bot {
         this._dataStorage = new DataStorage(this.DB_FILE);
         this._commandCenter = new CommandCenter(this._dataStorage);
         this._client = new discord.Client({
-            retryLimit: 5,
             intents: [discord.Intents.FLAGS.GUILDS, discord.Intents.FLAGS.GUILD_MESSAGES]
         });
         this._client.on('ready', this._ready.bind(this));
