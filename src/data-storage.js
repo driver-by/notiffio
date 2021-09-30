@@ -58,7 +58,11 @@ class DataStorage {
     }
 
     subscriptionsGetByLastCheckAndUpdate(updateInterval, service) {
-        const lastCheck = Date.now() - updateInterval;
+        // 20 minutes
+        const MAX_UPDATE_INTERVAL = 20 * 60 * 1000;
+        const INCREASE_UPDATE_INTERVAL_FROM_DAYS = 14;
+        const INCREASE_UPDATE_INTERVAL_BY = 2;
+        const WEEK_DAYS = 7;
         const subscriptionsDb = this._db.get('subscriptions')
         const subscriptions = subscriptionsDb.value();
         const result = [];
@@ -66,8 +70,25 @@ class DataStorage {
             const lastCheckStartedDiff = subscription.lastCheckStarted
                 ? Date.now() - subscription.lastCheckStarted
                 : Infinity;
-            if (subscription.service === service && subscription.lastCheck < lastCheck
-                && lastCheckStartedDiff >= updateInterval) {
+            // Increase check period if no stream for a long time
+            const statusChangeTimestampDiffDays = (Date.now() - subscription.statusChangeTimestamp)
+                / (1000 * 60 * 60 * 24);
+            let updateIntervalIncreasedIfNoStreamingForALongTime = updateInterval;
+            // Starting from 2 weeks increase by 2 minutes for every week until max
+            if (statusChangeTimestampDiffDays >= INCREASE_UPDATE_INTERVAL_FROM_DAYS) {
+                updateIntervalIncreasedIfNoStreamingForALongTime = updateInterval
+                    + INCREASE_UPDATE_INTERVAL_BY
+                    * Math.ceil(
+                        (statusChangeTimestampDiffDays - INCREASE_UPDATE_INTERVAL_FROM_DAYS)
+                        / WEEK_DAYS
+                    );
+            }
+            if (updateIntervalIncreasedIfNoStreamingForALongTime > MAX_UPDATE_INTERVAL) {
+                updateIntervalIncreasedIfNoStreamingForALongTime = MAX_UPDATE_INTERVAL;
+            }
+            if (subscription.service === service
+                && subscription.lastCheck < Date.now() - updateIntervalIncreasedIfNoStreamingForALongTime
+                && lastCheckStartedDiff >= updateIntervalIncreasedIfNoStreamingForALongTime) {
                 result.push(subscription);
                 // Save `lastCheckStarted` to prevent double check of the same item and double notifications
                 subscriptions[i].lastCheckStarted = Date.now();
