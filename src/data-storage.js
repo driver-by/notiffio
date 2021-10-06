@@ -71,8 +71,10 @@ class DataStorage {
                 ? Date.now() - subscription.lastCheckStarted
                 : Infinity;
             // Increase check period if no stream for a long time
-            const statusChangeTimestampDiffDays = (Date.now() - subscription.statusChangeTimestamp)
-                / (1000 * 60 * 60 * 24);
+            const statusChangeTimestampDiffDays = subscription.statusChangeTimestamp
+                ? (Date.now() - subscription.statusChangeTimestamp)
+                / (1000 * 60 * 60 * 24)
+                : 0;
             let updateIntervalIncreasedIfNoStreamingForALongTime = updateInterval;
             // Starting from 2 weeks increase by 2 minutes for every week until max
             if (statusChangeTimestampDiffDays >= INCREASE_UPDATE_INTERVAL_FROM_DAYS) {
