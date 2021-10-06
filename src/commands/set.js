@@ -113,7 +113,7 @@ const process = function(command, msg, dataStorage) {
             `**${dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE}** - отмена анонса\n\n` +
             `Другие настройки:\n` +
             `**!notify set ${dataStorage.SETTING_EMBED_REMOVE}** - отменить использование Embed сообщений\n` +
-            `**!notify set ${dataStorage.SETTING_EMBED_ALLOW}** - разрешить использование Embed сообщений` +
+            `**!notify set ${dataStorage.SETTING_EMBED_ALLOW}** - разрешить использование Embed сообщений\n\n` +
             `Другие "магические" строки кроме {channel}, заменяющиеся в сообщении:\n` +
             `**{everyone}** - @everyone (чтобы не спамить @everyone сообщениями во время настройки)\n` +
             `**{here}** - @here (чтобы не спамить @here сообщениями во время настройки)\n` +
