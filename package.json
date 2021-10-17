@@ -1,26 +1,46 @@
 {
   "name": "notiffio",
-  "version": "0.4.5",
-  "description": "Get stream start notifications from goodgame.ru, twitch.tv",
+  "version": "0.5.0",
+  "description": "Get stream notifications from twitch.tv, goodgame.ru in discord",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nx serve",
+    "build": "nx build",
+    "test": "nx test"
   },
   "author": "Sergei Tomin",
   "license": "MIT",
   "dependencies": {
+    "@nrwl/cli": "12.9.0",
+    "@nrwl/tao": "12.9.0",
+    "@nrwl/workspace": "12.9.0",
+    "@types/date-and-time": "^0.13.0",
+    "@types/lowdb": "^1.0.11",
+    "@types/node": "14.14.33",
     "axios": "^0.21.2",
     "date-and-time": "^0.14.2",
     "discord.js": "^13.1.0",
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
+    "prettier": "^2.3.1",
+    "tslib": "^2.0.0",
     "twitch": "^4.6.7",
     "twitch-auth": "^4.6.7",
+    "typescript": "~4.3.5",
     "winston": "^3.3.3"
   },
   "devDependencies": {
-    "nodemon": "^2.0.12"
+    "@nrwl/eslint-plugin-nx": "12.9.0",
+    "@nrwl/jest": "12.9.0",
+    "@nrwl/linter": "12.9.0",
+    "@nrwl/node": "^12.9.0",
+    "@types/jest": "26.0.24",
+    "@typescript-eslint/eslint-plugin": "~4.28.3",
+    "@typescript-eslint/parser": "~4.28.3",
+    "eslint": "7.22.0",
+    "eslint-config-prettier": "8.1.0",
+    "jest": "27.0.3",
+    "nodemon": "^2.0.12",
+    "ts-jest": "27.0.3"
   }
 }
