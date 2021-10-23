@@ -57,7 +57,6 @@ export abstract class StreamingService extends BaseService {
       return;
     }
 
-    console.log('subscriptionsToCheck', subscriptionsToCheck.length);
     return this.getChannelStatuses(subscriptionsToCheck).then(
       this.processChannelStatuses.bind(this, subscriptionsToCheck),
       (error) => logger.error(`getChannelStatuses error`, error)
