@@ -52,9 +52,5 @@
         }
       }
     }
-  },
-  "cli": {
-    "defaultCollection": "@nrwl/node"
-  },
-  "defaultProject": "bot"
+  }
 }
