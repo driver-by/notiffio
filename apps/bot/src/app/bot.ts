@@ -25,6 +25,7 @@ import {
 } from './subscriptions/events';
 import { getServiceInfo } from './services/helper';
 import * as dateAndTime from 'date-and-time';
+import { DataAccess } from '../../../../libs/data-access/src';
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -53,6 +54,10 @@ export class Bot {
 
   private init() {
     this.dataStorage = new DataStorage(this.DB_FILE);
+    const dataAccessTest = new DataAccess(process.env.MONGO_URL);
+    dataAccessTest.connect().then(() => {
+      console.log(dataAccessTest);
+    });
     this.commandCenter = new CommandCenter(this.dataStorage);
     this.client = new Client({
       intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
