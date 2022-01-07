@@ -5,7 +5,6 @@
 import { BaseService } from './base-service';
 import { DataStorage } from '../data-storage';
 import { getLogger } from '../services/logger';
-import { STATUS_DEAD, STATUS_LIVE } from './statuses';
 import {
   EVENT_BROADCAST_ADD,
   EVENT_BROADCAST_CHANGE,
@@ -16,6 +15,7 @@ import {
   EVENT_GO_OFFLINE,
 } from './events';
 import { ChannelDetails } from './channel-details';
+import { Status } from '../../../../../libs/data-access/src/lib/status';
 
 const logger = getLogger();
 
@@ -88,7 +88,7 @@ export abstract class StreamingService extends BaseService {
         let skipStatusChange = false;
         if (
           !firstCheck &&
-          subscription.status === STATUS_DEAD &&
+          subscription.status === Status.Dead &&
           !skipNotificationAsItIsExpired
         ) {
           // Don't set as DEAD within some interval (might be temporary drop)
@@ -110,7 +110,7 @@ export abstract class StreamingService extends BaseService {
           if (!firstCheck) {
             if (!skipNotificationAsItIsExpired) {
               let eventName;
-              if (subscription.status === STATUS_LIVE) {
+              if (subscription.status === Status.Live) {
                 // If the game is the same and LIVE not long after DEAD, then LIVE_AGAIN event
                 if (
                   savedData.statusChangedOnGame === subscription.game &&

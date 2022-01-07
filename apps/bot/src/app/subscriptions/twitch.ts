@@ -3,7 +3,7 @@ import { StreamingService, StreamingServiceConfig } from './streaming-service';
 import { ClientCredentialsAuthProvider } from 'twitch-auth';
 import { ApiClient } from 'twitch';
 import { ChannelDetails } from './channel-details';
-import { STATUS_DEAD, STATUS_LIVE } from './statuses';
+import { Status } from '../../../../../libs/data-access/src/lib/status';
 
 const MAX_CHANNELS_PER_REQUEST = 90; // Max of a twitch API is 100
 const USER_DATA_TIME_OUTDATED = 24 * 60 * 60 * 1000;
@@ -72,8 +72,8 @@ export class TwitchService extends StreamingService {
           id: user.id,
           status:
             channelData && channelData.type === 'live'
-              ? STATUS_LIVE
-              : STATUS_DEAD,
+              ? Status.Live
+              : Status.Dead,
           title: channelData ? channelData.title : '',
           game:
             channelData && gamesMap[channelData.gameId]
