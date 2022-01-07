@@ -52,12 +52,14 @@ export class Bot {
     this.init();
   }
 
-  private init() {
+  private async init() {
     this.dataStorage = new DataStorage(this.DB_FILE);
-    const dataAccessTest = new DataAccess(process.env.MONGO_URL);
-    dataAccessTest.connect().then(() => {
-      console.log(dataAccessTest);
-    });
+    const dataAccessTest = new DataAccess(
+      process.env.MONGO_URL,
+      process.env.MONGO_DB
+    );
+    await dataAccessTest.connect();
+
     this.commandCenter = new CommandCenter(this.dataStorage);
     this.client = new Client({
       intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],

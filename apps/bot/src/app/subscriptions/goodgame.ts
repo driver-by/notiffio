@@ -1,8 +1,8 @@
 import { StreamingService, StreamingServiceConfig } from './streaming-service';
 import { DataStorage } from '../data-storage';
 import axios from 'axios';
-import { STATUS_DEAD, STATUS_LIVE } from './statuses';
 import { ChannelDetails } from './channel-details';
+import { Status } from '../../../../../libs/data-access/src/lib/status';
 
 const MAX_CHANNELS_PER_REQUEST = 50;
 
@@ -58,7 +58,7 @@ export class GoodgameService extends StreamingService {
           nickname: channelData.streamer ? channelData.streamer.nickname : null,
           avatar: channelData.streamer ? channelData.streamer.avatar : null,
           id: channelData.id,
-          status: channelData.status ? STATUS_LIVE : STATUS_DEAD,
+          status: channelData.status ? Status.Live : Status.Dead,
           title: channelData.title,
           game: channelData.game,
           viewers: channelData.viewers,
