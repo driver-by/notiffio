@@ -1,6 +1,6 @@
-import { DataStorage } from '../data-storage';
+import { DataAccess } from '../../../../../libs/data-access/src';
 
-export default function help(command, msg, dataStorage: DataStorage) {
+export default function help(command, msg, dataAccess: DataAccess) {
   const text =
     `Список доступных команд:\n` +
     `**!notify help** - помощь по командам\n` +

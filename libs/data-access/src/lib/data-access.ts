@@ -118,7 +118,36 @@ export class DataAccess {
   async serverRemove(serverId: string) {
     const servers = this.db.collection(Collection.Servers);
     await servers.deleteOne(<Server>{ id: serverId });
-    await this.removeServerFromAllSubscriptions(serverId);
+    await this.removeServerFromSubscription(serverId);
+    await this.removeSubscriptionsWithNoServers();
+  }
+
+  async isSubscribed(
+    serverId: string,
+    channelId: string,
+    subscriptionName: string
+  ): Promise<boolean> {
+    const subscriptions = this.db.collection<Subscription>(
+      Collection.Subscriptions
+    );
+    const found = await subscriptions.findOne({
+      name: subscriptionName,
+      'servers.serverId': serverId,
+      'servers.channelId': channelId,
+    });
+    return Boolean(found);
+  }
+
+  async subscriptionRemove(
+    serverId: string,
+    channelId: string,
+    serviceName: string,
+    channel: string
+  ) {
+    const subscriptionName = this.getSubscriptionName(serviceName, channel);
+    await this.removeServerFromSubscription(serverId, {
+      name: subscriptionName,
+    });
     await this.removeSubscriptionsWithNoServers();
   }
 
@@ -141,14 +170,16 @@ export class DataAccess {
       server.serverId === serverId && server.channelId === channelId;
   }
 
-  private async removeServerFromAllSubscriptions(serverId: string) {
+  private async removeServerFromSubscription(
+    serverId: string,
+    subscriptionCondition = {}
+  ) {
     const subscriptions = this.db.collection<Subscription>(
       Collection.Subscriptions
     );
-    return await subscriptions.updateMany(
-      {},
-      { $pull: { servers: { serverId } } }
-    );
+    return await subscriptions.updateMany(subscriptionCondition, {
+      $pull: { servers: { serverId } },
+    });
   }
 
   private async removeSubscriptionsWithNoServers() {

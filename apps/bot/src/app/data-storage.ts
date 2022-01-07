@@ -123,11 +123,13 @@ export class DataStorage {
     return result;
   }
 
+  // NR
   subscriptionFind(service, channel) {
     const subscriptionName = this.getSubscriptionName(service, channel);
     return this.subscriptionFindByName(subscriptionName);
   }
 
+  // implemented
   subscriptionAdd(
     serverId,
     channelId,
@@ -201,6 +203,7 @@ export class DataStorage {
     }
   }
 
+  // implemented
   subscriptionRemove(serverId, channelId, serviceName, channel) {
     this.initTable('servers');
     this.initTable('subscriptions');
@@ -309,6 +312,7 @@ export class DataStorage {
     subscriptionsDb.assign(subscriptions).write();
   }
 
+  // implemented
   isSubscribed(serverId, channelId, subscriptionName) {
     const server = this.serverGetById(serverId);
     if (server && server.subscriptions) {
@@ -368,6 +372,7 @@ export class DataStorage {
     }
   }
 
+  // NR
   private subscriptionFindByName(name) {
     return (<any>this.db.get('subscriptions')).find(
       (sub) => sub.name.toLowerCase() === name.toLowerCase()
@@ -387,6 +392,7 @@ export class DataStorage {
       .write();
   }
 
+  // NR
   private serverGetById(serverId) {
     return (<any>this.db.get('servers')).find({ id: serverId }).value();
   }
