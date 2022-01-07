@@ -1,4 +1,4 @@
-import { Db, MongoClient } from 'mongodb';
+import { Db, GenericListener, MongoClient } from 'mongodb';
 import { SettingName } from './setting-name';
 import { Status } from './status';
 
@@ -70,6 +70,10 @@ export class DataAccess {
     return service + this.SUBSCRIPTION_NAME_DELIMITER + channel;
   }
 
+  onErrorLog(callback: GenericListener) {
+    this.client.addListener('error', callback);
+  }
+
   async subscriptionAdd(
     serverId: string,
     channelId: string,
@@ -111,6 +115,13 @@ export class DataAccess {
     );
   }
 
+  async serverRemove(serverId: string) {
+    const servers = this.db.collection(Collection.Servers);
+    await servers.deleteOne(<Server>{ id: serverId });
+    await this.removeServerFromAllSubscriptions(serverId);
+    await this.removeSubscriptionsWithNoServers();
+  }
+
   private async afterConnect(client: MongoClient) {
     this.db = await client.db(this.dbName);
     this.initSchema(this.db);
@@ -119,12 +130,31 @@ export class DataAccess {
   private async initSchema(db: Db) {
     const servers = db.collection(Collection.Servers);
     const subscriptions = db.collection(Collection.Subscriptions);
-    await servers.createIndex({ id: 'text' }, { unique: true });
-    await subscriptions.createIndex({ name: 'text' }, { unique: true });
+    await servers.createIndex({ id: 'text' });
+    await servers.createIndex({ id: 1 }, { unique: true });
+    await subscriptions.createIndex({ name: 'text' });
+    await subscriptions.createIndex({ name: 1 }, { unique: true });
   }
 
   private getSubscriptionServerComparator(serverId, channelId) {
     return (server) =>
       server.serverId === serverId && server.channelId === channelId;
+  }
+
+  private async removeServerFromAllSubscriptions(serverId: string) {
+    const subscriptions = this.db.collection<Subscription>(
+      Collection.Subscriptions
+    );
+    return await subscriptions.updateMany(
+      {},
+      { $pull: { servers: { serverId } } }
+    );
+  }
+
+  private async removeSubscriptionsWithNoServers() {
+    const subscriptions = this.db.collection(Collection.Subscriptions);
+    return await subscriptions.deleteMany({
+      $or: [{ servers: [] }, { servers: null }, { servers: undefined }],
+    });
   }
 }

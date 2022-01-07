@@ -35,10 +35,12 @@ export class DataStorage {
     this.init();
   }
 
+  // implemented
   getSubscriptionName(service, channel) {
     return service + this.SUBSCRIPTION_NAME_DELIMITER + channel;
   }
 
+  // NR
   serverAdd(server) {
     const result = this.serverGetById(server.id);
     if (!result) {
@@ -48,12 +50,14 @@ export class DataStorage {
     return result;
   }
 
+  // NR
   serverGet(serverId) {
     const result = this.serverGetById(serverId);
 
     return result;
   }
 
+  // implemented
   serverRemove(serverId) {
     this.subscriptionRemoveList(serverId);
     (<any>this.db.get('servers')).remove({ id: serverId }).write();
@@ -233,6 +237,7 @@ export class DataStorage {
     }
   }
 
+  // NR
   subscriptionRemoveList(serverId, channelId?) {
     const server = this.serverGetById(serverId);
     let removeSubscriptions = null;
