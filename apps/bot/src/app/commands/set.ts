@@ -1,5 +1,6 @@
-import { DataStorage } from '../data-storage';
 import { getServiceInfo } from '../services/helper';
+import { DataAccess } from '../../../../../libs/data-access/src';
+import { SettingName } from '../../../../../libs/data-access/src/lib/setting-name';
 
 const DEFAULT_COMMAND = 'default';
 const removeFirstWord = (text) => {
@@ -13,17 +14,17 @@ const removeFirstWord = (text) => {
   return text.substr(index + 1);
 };
 
-export default function set(command, msg, dataStorage: DataStorage) {
+export default function set(command, msg, dataAccess: DataAccess) {
   let text;
   if (command.params.length) {
     const setting = command.params[0];
     switch (setting) {
-      case dataStorage.SETTING_STREAM_START_MESSAGE:
-      case dataStorage.SETTING_STREAM_STOP_MESSAGE:
-      case dataStorage.SETTING_STREAM_PROCEED_MESSAGE:
-      case dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE:
-      case dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE:
-      case dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE:
+      case SettingName.StreamStart:
+      case SettingName.StreamStop:
+      case SettingName.StreamProceed:
+      case SettingName.AnnouncementAdd:
+      case SettingName.AnnouncementEdit:
+      case SettingName.AnnouncementRemove:
         let result;
         let setTextTo;
         if (command.params[1] && command.params[1].startsWith('http')) {
@@ -32,34 +33,34 @@ export default function set(command, msg, dataStorage: DataStorage) {
             removeFirstWord(removeFirstWord(command.text))
           );
           const channel = getServiceInfo(command.params[1]);
-          const subscriptionName = dataStorage.getSubscriptionName(
+          const subscriptionName = dataAccess.getSubscriptionName(
             channel.service,
             channel.channel
           );
           if (setTextTo === DEFAULT_COMMAND) {
-            result = dataStorage.removeSettingMessage(
-              setting,
-              msg.guild.id,
-              subscriptionName
-            );
+            // result = dataAccess.removeSettingMessage(
+            //   setting,
+            //   msg.guild.id,
+            //   subscriptionName
+            // );
           } else {
-            result = dataStorage.updateSettingMessage(
-              setting,
-              msg.guild.id,
-              setTextTo,
-              subscriptionName
-            );
+            // result = dataAccess.updateSettingMessage(
+            //   setting,
+            //   msg.guild.id,
+            //   setTextTo,
+            //   subscriptionName
+            // );
           }
         } else {
           setTextTo = removeFirstWord(removeFirstWord(command.text));
           if (setTextTo === DEFAULT_COMMAND) {
-            result = dataStorage.removeSettingMessage(setting, msg.guild.id);
+            // result = dataAccess.removeSettingMessage(setting, msg.guild.id);
           } else {
-            result = dataStorage.updateSettingMessage(
-              setting,
-              msg.guild.id,
-              setTextTo
-            );
+            // result = dataAccess.updateSettingMessage(
+            //   setting,
+            //   msg.guild.id,
+            //   setTextTo
+            // );
           }
         }
         if (setTextTo === DEFAULT_COMMAND) {
@@ -74,15 +75,15 @@ export default function set(command, msg, dataStorage: DataStorage) {
           text = `Не удалось сохранить, проверьте название канала`;
         }
         break;
-      case dataStorage.SETTING_EMBED_REMOVE:
-        dataStorage.updateSettingMessage(setting, msg.guild.id, true);
+      case SettingName.EmbedRemove:
+        // dataAccess.updateSettingMessage(setting, msg.guild.id, true);
         text = `Embed сообщения отключены`;
         break;
-      case dataStorage.SETTING_EMBED_ALLOW:
-        dataStorage.removeSettingMessage(
-          dataStorage.SETTING_EMBED_REMOVE,
-          msg.guild.id
-        );
+      case SettingName.EmbedAllow:
+        // dataAccess.removeSettingMessage(
+        //   SettingName.EmbedRemove,
+        //   msg.guild.id
+        // );
         text = `Embed сообщения включены`;
         break;
       default:
@@ -91,26 +92,26 @@ export default function set(command, msg, dataStorage: DataStorage) {
   } else {
     text =
       `Доступные команды:\n` +
-      `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} ` +
+      `**!notify set ${SettingName.StreamStart} ` +
       `Стрим на канале {channel} начался** - ` +
       `устанавливает собщение для оповещения о начале стрима ` +
       `({channel} в сообщении автоматически заменяется на название канала, см. другие магические строки в конце)\n\n` +
-      `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} HTTP-АДРЕС-КАНАЛА ` +
+      `**!notify set ${SettingName.StreamStart} HTTP-АДРЕС-КАНАЛА ` +
       `Стрим на канале {channel} начался** - ` +
       `устанавливает собщение для оповещения о начале стрима конкретного канала. ` +
       `Замените HTTP-АДРЕС-КАНАЛА на реальный адрес канала\n\n` +
-      `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE}** - не выводить оповещение (т.е. передается пустой текст)\n` +
-      `**!notify set ${dataStorage.SETTING_STREAM_START_MESSAGE} default** - устанавливает значение по-умолчанию\n\n` +
+      `**!notify set ${SettingName.StreamStart}** - не выводить оповещение (т.е. передается пустой текст)\n` +
+      `**!notify set ${SettingName.StreamStart} default** - устанавливает значение по-умолчанию\n\n` +
       `*Все доступные настройки:*\n` +
-      `**${dataStorage.SETTING_STREAM_START_MESSAGE}** - сообщение о начале стрима\n` +
-      `**${dataStorage.SETTING_STREAM_STOP_MESSAGE}** - сообщение об окончании стрима\n` +
-      `**${dataStorage.SETTING_STREAM_PROCEED_MESSAGE}** - сообщение о продолжении стрима\n` +
-      `**${dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE}** - новый анонс\n` +
-      `**${dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE}** - изменение анонса\n` +
-      `**${dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE}** - отмена анонса\n\n` +
+      `**${SettingName.StreamStart}** - сообщение о начале стрима\n` +
+      `**${SettingName.StreamStop}** - сообщение об окончании стрима\n` +
+      `**${SettingName.StreamProceed}** - сообщение о продолжении стрима\n` +
+      `**${SettingName.AnnouncementAdd}** - новый анонс\n` +
+      `**${SettingName.AnnouncementEdit}** - изменение анонса\n` +
+      `**${SettingName.AnnouncementRemove}** - отмена анонса\n\n` +
       `Другие настройки:\n` +
-      `**!notify set ${dataStorage.SETTING_EMBED_REMOVE}** - отменить использование Embed сообщений\n` +
-      `**!notify set ${dataStorage.SETTING_EMBED_ALLOW}** - разрешить использование Embed сообщений\n\n` +
+      `**!notify set ${SettingName.EmbedRemove}** - отменить использование Embed сообщений\n` +
+      `**!notify set ${SettingName.EmbedAllow}** - разрешить использование Embed сообщений\n\n` +
       `Другие "магические" строки кроме {channel}, заменяющиеся в сообщении:\n` +
       `**{everyone}** - @everyone (чтобы не спамить @everyone сообщениями во время настройки)\n` +
       `**{here}** - @here (чтобы не спамить @here сообщениями во время настройки)\n` +

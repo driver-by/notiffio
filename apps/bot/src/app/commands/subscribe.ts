@@ -1,7 +1,7 @@
 import { getServiceInfo } from '../services/helper';
-import { DataStorage } from '../data-storage';
+import { DataAccess } from '../../../../../libs/data-access/src';
 
-export default function subscribe(command, msg, dataStorage: DataStorage) {
+export default async function subscribe(command, msg, dataAccess: DataAccess) {
   const serverId = msg.guild.id;
   const serverName = msg.guild.name;
   const channelId = msg.channel.id;
@@ -11,17 +11,17 @@ export default function subscribe(command, msg, dataStorage: DataStorage) {
   let isSubscribed = false;
   let text;
   if (subscribeTo && subscribeTo.channel) {
-    const subscriptionName = dataStorage.getSubscriptionName(
+    const subscriptionName = dataAccess.getSubscriptionName(
       subscribeTo.service,
       subscribeTo.channel
     );
-    wasSubscribed = dataStorage.isSubscribed(
+    wasSubscribed = await dataAccess.isSubscribed(
       serverId,
       channelId,
       subscriptionName
     );
     if (wasSubscribed) {
-      dataStorage.subscriptionRemove(
+      await dataAccess.subscriptionRemove(
         serverId,
         channelId,
         subscribeTo.service,
@@ -40,7 +40,7 @@ export default function subscribe(command, msg, dataStorage: DataStorage) {
   msg.channel.send(text).then(() => {
     // Subscribe only after successful message. Bot could miss permissions for a channel then no need to subscribe
     if (isSubscribed) {
-      dataStorage.subscriptionAdd(
+      dataAccess.subscriptionAdd(
         serverId,
         channelId,
         serverName,

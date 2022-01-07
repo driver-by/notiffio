@@ -38,6 +38,7 @@ export class Bot {
   private readonly HTTP_PERMISSIONS_ERROR_STATUS = 403;
 
   private dataStorage: DataStorage;
+  private dataAccess: DataAccess;
   private client: Client;
   private commandCenter: CommandCenter;
   private services: Array<BaseService>;
@@ -55,20 +56,20 @@ export class Bot {
   private async init() {
     this.dataStorage = new DataStorage(this.DB_FILE);
     this.logger = getLogger();
-    const dataAccessTest = new DataAccess(
+    this.dataAccess = new DataAccess(
       process.env.MONGO_URL,
       process.env.MONGO_DB
     );
-    await dataAccessTest.connect().then(
+    await this.dataAccess.connect().then(
       () => {},
       (error) => {
         this.logger.error(`DB connection, url: ${error}`);
       }
     );
-    dataAccessTest.onErrorLog((error) => {
+    this.dataAccess.onErrorLog((error) => {
       this.logger.error('DB error');
     });
-    this.commandCenter = new CommandCenter(this.dataStorage);
+    this.commandCenter = new CommandCenter(this.dataAccess);
     this.client = new Client({
       intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
     });

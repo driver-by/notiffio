@@ -1,14 +1,14 @@
-import { DataStorage } from './data-storage';
 import { Message } from 'discord.js';
 import { Commands } from './commands';
+import { DataAccess } from '../../../../libs/data-access/src';
 
 export class CommandCenter {
   private readonly COMMAND_PREFIX = '!notify ';
 
-  private readonly dataStorage: DataStorage;
+  private readonly dataAccess: DataAccess;
 
-  constructor(dataStorage: DataStorage) {
-    this.dataStorage = dataStorage;
+  constructor(dataStorage: DataAccess) {
+    this.dataAccess = dataStorage;
   }
 
   process(msg: Message) {
@@ -20,9 +20,9 @@ export class CommandCenter {
       msg.content
     );
     if (Commands[command.main]) {
-      return Commands[command.main](command, msg, this.dataStorage);
+      return Commands[command.main](command, msg, this.dataAccess);
     } else {
-      return Commands.subscribe(command, msg, this.dataStorage);
+      return Commands.subscribe(command, msg, this.dataAccess);
     }
   }
 
