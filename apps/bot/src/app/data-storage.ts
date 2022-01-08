@@ -327,6 +327,7 @@ export class DataStorage {
     return false;
   }
 
+  // implemented
   getSettingMessage(setting, serverId, subscriptionName = null) {
     const msg = this.serverSubscriptionSettingsGet(
       serverId,
@@ -340,6 +341,7 @@ export class DataStorage {
     return msg;
   }
 
+  // implemented
   updateSettingMessage(setting, serverId, text, subscriptionName = null) {
     if (subscriptionName) {
       return this.serverSubscriptionSettingSet(
@@ -353,6 +355,7 @@ export class DataStorage {
     }
   }
 
+  // implemented
   removeSettingMessage(setting, serverId, subscriptionName = null) {
     return this.updateSettingMessage(
       setting,
@@ -366,6 +369,7 @@ export class DataStorage {
     this.db = await lowdb(new FileSync(this.dbname));
   }
 
+  // NR
   private initTable(name) {
     if (!this.db.has(name).value()) {
       this.db.set(name, []).write();
@@ -385,6 +389,7 @@ export class DataStorage {
       .write();
   }
 
+  // NR
   private serverAddToDb(server) {
     this.initTable('servers');
     (<any>this.db.get('servers'))
@@ -397,6 +402,7 @@ export class DataStorage {
     return (<any>this.db.get('servers')).find({ id: serverId }).value();
   }
 
+  // implemented
   private serverSettingsGet(serverId, settingName) {
     const server = this.serverGetById(serverId);
 
@@ -407,6 +413,7 @@ export class DataStorage {
     }
   }
 
+  // implemented
   private serverSubscriptionSettingsGet(
     serverId,
     subscriptionName,
@@ -431,6 +438,7 @@ export class DataStorage {
     }
   }
 
+  // implemented
   private serverSettingSet(serverId, settingName, value) {
     let server = this.serverGetById(serverId);
 
@@ -449,6 +457,7 @@ export class DataStorage {
     return value;
   }
 
+  // implemented
   private serverSubscriptionSettingSet(
     serverId,
     subscriptionName,
