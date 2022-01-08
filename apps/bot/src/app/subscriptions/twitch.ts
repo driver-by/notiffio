@@ -7,6 +7,7 @@ import { Status } from '../../../../../libs/data-access/src/lib/status';
 
 const MAX_CHANNELS_PER_REQUEST = 90; // Max of a twitch API is 100
 const USER_DATA_TIME_OUTDATED = 24 * 60 * 60 * 1000;
+const GAMES_KEY = 'game';
 
 export class TwitchService extends StreamingService {
   private readonly client: ApiClient;
@@ -98,14 +99,20 @@ export class TwitchService extends StreamingService {
       if (!gameIds) {
         return [];
       }
-      const data = this.dataStorage.serviceDataGet(this.name);
-      const games = (data && data.games) || {};
+      const data = this.dataStorage.serviceDataGet(
+        this.name,
+        gameIds.map(this.getGameKey)
+      );
+      const games = {};
+      data.forEach((dbRow) => {
+        games[dbRow.key.slice(GAMES_KEY.length)] = dbRow.value;
+      });
       const gamesResult = [];
       const gamesIdsToSearchInApi = [];
 
       gameIds.forEach((gameId) => {
         if (games[gameId]) {
-          gamesResult.push(games[gameId]);
+          gamesResult.push({ id: gameId, name: games[gameId] });
         } else {
           gamesIdsToSearchInApi.push(gameId);
         }
@@ -127,12 +134,12 @@ export class TwitchService extends StreamingService {
   }
 
   private addGamesToStorage(gamesArray) {
-    const data = this.dataStorage.serviceDataGet(this.name) || {};
-    data.games = data.games || {};
-    gamesArray.forEach(
-      (game) => (data.games[game.id] = this.mapGameFromApi(game))
-    );
-    this.dataStorage.serviceDataUpdate(this.name, data);
+    const addArray = gamesArray.map((game) => {
+      return {
+        [this.getGameKey(game.id)]: game.name,
+      };
+    });
+    this.dataStorage.serviceDataSet(this.name, addArray);
   }
 
   private async getUserDataByName(channels) {
@@ -187,11 +194,7 @@ export class TwitchService extends StreamingService {
     );
   }
 
-  private mapGameFromApi(game) {
-    const { id, name } = game;
-    return {
-      id,
-      name,
-    };
+  private getGameKey(gameId: string) {
+    return `${GAMES_KEY}${gameId}`;
   }
 }

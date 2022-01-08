@@ -63,11 +63,13 @@ export class DataStorage {
     (<any>this.db.get('servers')).remove({ id: serverId }).write();
   }
 
+  // implemented
   serviceDataGet(serviceName) {
     const saveServiceName = this.getSafeVariableName(serviceName);
     return this.db.get(`${serviceDataTableName}.${saveServiceName}`).value();
   }
 
+  // implemented
   serviceDataUpdate(serviceName, data) {
     return this.serviceDataSet(serviceName, data);
   }
@@ -240,7 +242,6 @@ export class DataStorage {
     }
   }
 
-  // NR
   subscriptionRemoveList(serverId, channelId?) {
     const server = this.serverGetById(serverId);
     let removeSubscriptions = null;
@@ -365,6 +366,7 @@ export class DataStorage {
     );
   }
 
+  // implemented
   private async init() {
     this.db = await lowdb(new FileSync(this.dbname));
   }
@@ -383,6 +385,7 @@ export class DataStorage {
     );
   }
 
+  // NR
   private subscriptionRemoveByName(name) {
     (<any>this.db.get('subscriptions'))
       .remove((sub) => sub.name.toLowerCase() === name.toLowerCase())
@@ -486,6 +489,7 @@ export class DataStorage {
     return value;
   }
 
+  // NR
   private serviceDataSet(serviceName, value) {
     const saveServiceName = this.getSafeVariableName(serviceName);
     return this.db

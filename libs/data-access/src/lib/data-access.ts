@@ -37,6 +37,13 @@ export interface Subscription {
   broadcasts: Broadcast[];
   notFoundTimes: number;
   lastCheckStarted: number;
+  additionalInfo: any;
+}
+
+export interface ServiceData {
+  service: string;
+  key: string;
+  value: any;
 }
 
 enum Collection {
@@ -202,6 +209,29 @@ export class DataAccess {
     return msg;
   }
 
+  async serviceDataGet(
+    serviceName: string,
+    dataKeys: string[]
+  ): Promise<ServiceData[]> {
+    const serviceData = this.db.collection<ServiceData>(Collection.ServiceData);
+    const saveServiceName = this.getSafeVariableName(serviceName);
+    const result = await serviceData.find({
+      service: saveServiceName,
+      key: { $in: dataKeys },
+    });
+    return result.toArray();
+  }
+
+  async serviceDataSet(serviceName: string, keyValue: Record<string, any>[]) {
+    const serviceData = this.db.collection<ServiceData>(Collection.ServiceData);
+    return await serviceData.updateMany(
+      <ServiceData[]>keyValue.map((data) => {
+        return { service: serviceName, key: data.key, value: data.value };
+      }),
+      { upsert: true }
+    );
+  }
+
   private async afterConnect(client: MongoClient) {
     this.db = await client.db(this.dbName);
     this.initSchema(this.db);
@@ -214,6 +244,8 @@ export class DataAccess {
     await servers.createIndex({ id: 1 }, { unique: true });
     await subscriptions.createIndex({ name: 'text' });
     await subscriptions.createIndex({ name: 1 }, { unique: true });
+    await subscriptions.createIndex({ service: 'text', key: 'text' });
+    await subscriptions.createIndex({ service: 1, key: 1 }, { unique: true });
   }
 
   private getSubscriptionServerComparator(serverId, channelId) {
@@ -292,5 +324,9 @@ export class DataAccess {
     const setting = await servers.findOne({ id: serverId });
 
     return setting?.settings?.[subscriptionName]?.[settingName] || undefined;
+  }
+
+  private getSafeVariableName(varName) {
+    return varName.replace(/[\.]/gi, '');
   }
 }
