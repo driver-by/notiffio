@@ -233,12 +233,17 @@ export class DataAccess {
 
   async serviceDataSet(serviceName: string, keyValue: Record<string, any>[]) {
     const serviceData = this.db.collection<ServiceData>(Collection.ServiceData);
-    return await serviceData.updateMany(
-      <ServiceData[]>keyValue.map((data) => {
-        return { service: serviceName, key: data.key, value: data.value };
-      }),
-      { upsert: true }
-    );
+    const promises = [];
+    keyValue.forEach((data) => {
+      promises.push(
+        serviceData.updateOne(
+          { service: serviceName, key: data.key },
+          { $set: { value: data.value } }
+        ),
+        { upsert: true }
+      );
+    });
+    return Promise.all(promises);
   }
 
   async subscriptionsGetByLastCheckAndUpdate(
@@ -252,16 +257,38 @@ export class DataAccess {
       {
         service,
         // lastCheckStarted empty or earlier than max update interval (checking process dropped for some reason?)
-        lastCheckStarted: {
-          $or: [
-            { $lte: Date.now() - this.MAX_UPDATE_INTERVAL },
-            { $eq: null },
-            { $eq: undefined },
-          ],
-        },
-        lastCheck: {
-          $lte: Date.now() - updateInterval,
-        },
+        $and: [
+          {
+            $or: [
+              {
+                lastCheckStarted: {
+                  $lte: Date.now() - this.MAX_UPDATE_INTERVAL,
+                },
+              },
+              {
+                lastCheckStarted: { $eq: null },
+              },
+              {
+                lastCheckStarted: { $eq: undefined },
+              },
+            ],
+          },
+          {
+            $or: [
+              {
+                lastCheck: {
+                  $lte: Date.now() - updateInterval,
+                },
+              },
+              {
+                lastCheck: { $eq: null },
+              },
+              {
+                lastCheck: { $eq: undefined },
+              },
+            ],
+          },
+        ],
       },
       {
         sort: { lastCheck: 1 },
@@ -275,8 +302,9 @@ export class DataAccess {
           subscription.statusChangeTimestamp
         );
       if (
+        !subscription.lastCheck ||
         subscription.lastCheck <=
-        Date.now() - updateIntervalIncreasedIfNoStreamingForALongTime
+          Date.now() - updateIntervalIncreasedIfNoStreamingForALongTime
       ) {
         result.push(subscription);
       }
@@ -334,7 +362,7 @@ export class DataAccess {
     );
     return subscriptions.updateOne(
       { name: subscriptionName },
-      { additionalInfo: { $set: additionalInfo } }
+      { $set: { additionalInfo } }
     );
   }
 
