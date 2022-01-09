@@ -3,7 +3,6 @@
  * Don't create instances of this class
  */
 import { BaseService } from './base-service';
-import { DataStorage } from '../data-storage';
 import { getLogger } from '../services/logger';
 import {
   EVENT_BROADCAST_ADD,
@@ -16,13 +15,14 @@ import {
 } from './events';
 import { ChannelDetails } from './channel-details';
 import { Status } from '../../../../../libs/data-access/src/lib/status';
+import { DataAccess, Subscription } from '../../../../../libs/data-access/src';
 
 const logger = getLogger();
 
 export type StreamingServiceConfig = { UPDATE_INTERVAL };
 
 export abstract class StreamingService extends BaseService {
-  protected readonly dataStorage: DataStorage;
+  protected readonly dataAccess: DataAccess;
   protected readonly UPDATE_INTERVAL: number;
   protected readonly REMOVE_SUBSCRIPTIONS_AFTER_NOT_FOUND_TIMES: number;
   protected readonly NOT_CHANGE_TO_DEAD_WITHIN = 60 * 1000;
@@ -31,12 +31,12 @@ export abstract class StreamingService extends BaseService {
   protected readonly REMOVE_BROADCAST_AFTER = 10 * 60 * 1000;
 
   protected constructor(
-    dataStorage: DataStorage,
+    dataAccess: DataAccess,
     config: StreamingServiceConfig
   ) {
     super();
     this.name = 'StreamingService';
-    this.dataStorage = dataStorage;
+    this.dataAccess = dataAccess;
     this.UPDATE_INTERVAL = config.UPDATE_INTERVAL || 30 * 1000;
     this.REMOVE_SUBSCRIPTIONS_AFTER_NOT_FOUND_TIMES =
       (60 * 60 * 1000) / this.UPDATE_INTERVAL; // 60 min
@@ -48,7 +48,7 @@ export abstract class StreamingService extends BaseService {
 
   async update() {
     const subscriptionsToCheck =
-      this.dataStorage.subscriptionsGetByLastCheckAndUpdate(
+      await this.dataAccess.subscriptionsGetByLastCheckAndUpdate(
         this.UPDATE_INTERVAL,
         this.name
       );
@@ -57,34 +57,35 @@ export abstract class StreamingService extends BaseService {
       return;
     }
 
+    await this.dataAccess.setLastCheckStartedToNow(subscriptionsToCheck);
+
     return this.getChannelStatuses(subscriptionsToCheck).then(
       this.processChannelStatuses.bind(this, subscriptionsToCheck),
       (error) => logger.error(`getChannelStatuses error`, error)
     );
   }
 
-  processChannelStatuses(subscriptionsToCheck, result) {
-    super.processChannelStatuses(subscriptionsToCheck, result);
+  async processChannelStatuses(subscriptionsToCheck, result) {
+    await super.processChannelStatuses(subscriptionsToCheck, result);
 
     const subscriptionsByName = {};
     subscriptionsToCheck.forEach(
       (sub) => (subscriptionsByName[sub.name.toLowerCase()] = sub)
     );
+    const promises = [];
 
     result.forEach((subscription, j) => {
-      const subscriptionName = this.dataStorage
+      const subscriptionName = this.dataAccess
         .getSubscriptionName(this.name, subscription.name)
         .toLowerCase();
-      const savedData = Object.assign(
-        {},
-        subscriptionsByName[subscriptionName]
-      );
+      const subscriptionData = subscriptionsByName[subscriptionName];
+      const savedData = <Subscription>{};
       const now = Date.now();
       // Don't send notification if last check was too long ago (bot was switched off)
       const skipNotificationAsItIsExpired =
-        now - savedData.lastCheck > this.NOTIFICATION_EXPIRED;
-      if (subscription.status !== savedData.lastStatus) {
-        const firstCheck = !savedData.lastStatus;
+        now - subscriptionData.lastCheck > this.NOTIFICATION_EXPIRED;
+      if (subscription.status !== subscriptionData.lastStatus) {
+        const firstCheck = !subscriptionData.lastStatus;
         let skipStatusChange = false;
         if (
           !firstCheck &&
@@ -92,8 +93,11 @@ export abstract class StreamingService extends BaseService {
           !skipNotificationAsItIsExpired
         ) {
           // Don't set as DEAD within some interval (might be temporary drop)
-          if (savedData.firstDead) {
-            if (now - savedData.firstDead < this.NOT_CHANGE_TO_DEAD_WITHIN) {
+          if (subscriptionData.firstDead) {
+            if (
+              now - subscriptionData.firstDead <
+              this.NOT_CHANGE_TO_DEAD_WITHIN
+            ) {
               skipStatusChange = true;
             } else {
               savedData.firstDead = null;
@@ -105,7 +109,7 @@ export abstract class StreamingService extends BaseService {
         }
         if (!skipStatusChange) {
           savedData.firstDead = null;
-          savedData.previousStatus = savedData.lastStatus;
+          savedData.previousStatus = subscriptionData.lastStatus;
           savedData.lastStatus = subscription.status;
           if (!firstCheck) {
             if (!skipNotificationAsItIsExpired) {
@@ -113,8 +117,9 @@ export abstract class StreamingService extends BaseService {
               if (subscription.status === Status.Live) {
                 // If the game is the same and LIVE not long after DEAD, then LIVE_AGAIN event
                 if (
-                  savedData.statusChangedOnGame === subscription.game &&
-                  now - savedData.statusChangeTimestamp < this.LIVE_AGAIN_WITHIN
+                  subscriptionData.statusChangedOnGame === subscription.game &&
+                  now - subscriptionData.statusChangeTimestamp <
+                    this.LIVE_AGAIN_WITHIN
                 ) {
                   eventName = EVENT_GO_LIVE_AGAIN;
                 } else {
@@ -125,7 +130,7 @@ export abstract class StreamingService extends BaseService {
               }
               this.emitEvent(eventName, {
                 subscription,
-                servers: savedData.servers,
+                servers: subscriptionData.servers,
               });
             }
             savedData.statusChangeTimestamp = now;
@@ -138,16 +143,10 @@ export abstract class StreamingService extends BaseService {
       // Save broadcasts in array to prevent multiple events because of few broadcast changes.
       let eventName;
       let savedBroadcast;
-      // Fallback broadcasts array from last info to prevent migration
-      if (
-        savedData.lastInfo &&
-        savedData.lastInfo.broadcast &&
-        !savedData.broadcasts
-      ) {
-        savedData.broadcasts = [savedData.lastInfo.broadcast];
-      }
-      if (savedData.broadcasts) {
-        savedData.broadcasts = this.removeOldBroadcasts(savedData.broadcasts);
+      if (subscriptionData.broadcasts) {
+        savedData.broadcasts = this.removeOldBroadcasts(
+          subscriptionData.broadcasts
+        );
         savedBroadcast = savedData.broadcasts.find((b) =>
           this.broadcastEquals(b, subscription.broadcast)
         );
@@ -186,7 +185,7 @@ export abstract class StreamingService extends BaseService {
           broadcast: subscription.broadcast,
           broadcastPrevious: savedBroadcast,
           subscription,
-          servers: savedData.servers,
+          servers: subscriptionData.servers,
         });
       }
       if (savedBroadcast) {
@@ -199,10 +198,14 @@ export abstract class StreamingService extends BaseService {
       savedData.lastCheck = now;
       savedData.lastInfo = subscription;
       savedData.notFoundTimes = 0;
-      this.dataStorage.updateSubscription(savedData.name, savedData);
+      promises.push(
+        this.dataAccess.updateSubscription(subscriptionName, savedData)
+      );
     });
     const notFoundChannels = this.getNotFound(subscriptionsToCheck, result);
-    this.updateNotFound(notFoundChannels);
+    promises.push(this.updateNotFound(notFoundChannels));
+
+    return Promise.all(promises);
   }
 
   protected broadcastEquals(b1, b2) {
@@ -229,22 +232,26 @@ export abstract class StreamingService extends BaseService {
     );
   }
 
-  protected removeNotFound(channel) {
+  protected async removeNotFound(channel) {
     if (!channel) {
       return;
     }
+    const promises = [];
     this.emitEvent(EVENT_CHANNEL_NOT_FOUND, {
       servers: channel.servers,
       channel: channel.channel,
     });
     channel.servers.forEach((server) => {
-      this.dataStorage.subscriptionRemove(
-        server.serverId,
-        server.channelId,
-        channel.service,
-        channel.channel
+      promises.push(
+        this.dataAccess.subscriptionRemove(
+          server.serverId,
+          server.channelId,
+          channel.service,
+          channel.channel
+        )
       );
     });
+    return Promise.all(promises);
   }
 
   /**
@@ -253,18 +260,24 @@ export abstract class StreamingService extends BaseService {
    * @param channels
    * @private
    */
-  protected updateNotFound(channels) {
+  protected async updateNotFound(channels) {
+    const promises = [];
     channels.forEach((channel) => {
-      channel.notFoundTimes = channel.notFoundTimes || 0;
-      channel.notFoundTimes++;
+      const saveData = <Subscription>{};
+      saveData.notFoundTimes = channel.notFoundTimes || 0;
+      saveData.notFoundTimes++;
       if (
-        channel.notFoundTimes >= this.REMOVE_SUBSCRIPTIONS_AFTER_NOT_FOUND_TIMES
+        saveData.notFoundTimes >=
+        this.REMOVE_SUBSCRIPTIONS_AFTER_NOT_FOUND_TIMES
       ) {
-        this.removeNotFound(channel);
+        promises.push(this.removeNotFound(channel));
       } else {
-        channel.lastCheck = Date.now();
-        this.dataStorage.updateSubscription(channel.name, channel);
+        saveData.lastCheck = Date.now();
+        promises.push(
+          this.dataAccess.updateSubscription(channel.name, saveData)
+        );
       }
     });
+    return Promise.all(promises);
   }
 }

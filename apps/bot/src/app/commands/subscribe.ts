@@ -40,11 +40,10 @@ export default async function subscribe(command, msg, dataAccess: DataAccess) {
   msg.channel.send(text).then(() => {
     // Subscribe only after successful message. Bot could miss permissions for a channel then no need to subscribe
     if (isSubscribed) {
-      dataAccess.subscriptionAdd(
+      return dataAccess.subscriptionAdd(
         serverId,
         channelId,
         serverName,
-        channelName,
         subscribeTo.service,
         subscribeTo.channel
       );

@@ -1,9 +1,9 @@
-import { DataStorage } from '../data-storage';
 import { StreamingService, StreamingServiceConfig } from './streaming-service';
 import { ClientCredentialsAuthProvider } from 'twitch-auth';
 import { ApiClient } from 'twitch';
 import { ChannelDetails } from './channel-details';
 import { Status } from '../../../../../libs/data-access/src/lib/status';
+import { DataAccess } from '../../../../../libs/data-access/src';
 
 const MAX_CHANNELS_PER_REQUEST = 90; // Max of a twitch API is 100
 const USER_DATA_TIME_OUTDATED = 24 * 60 * 60 * 1000;
@@ -11,8 +11,8 @@ const GAMES_KEY = 'game';
 
 export class TwitchService extends StreamingService {
   private readonly client: ApiClient;
-  constructor(dataStorage: DataStorage, config: StreamingServiceConfig) {
-    super(dataStorage, config);
+  constructor(dataAccess: DataAccess, config: StreamingServiceConfig) {
+    super(dataAccess, config);
     this.name = 'twitch.tv';
     const authProvider = new ClientCredentialsAuthProvider(
       process.env.TWITCH_CLIENT_ID,
@@ -95,11 +95,11 @@ export class TwitchService extends StreamingService {
   }
 
   private getGamesByIds(gameIds) {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
       if (!gameIds) {
         return [];
       }
-      const data = this.dataStorage.serviceDataGet(
+      const data = await this.dataAccess.serviceDataGet(
         this.name,
         gameIds.map(this.getGameKey)
       );
@@ -119,8 +119,8 @@ export class TwitchService extends StreamingService {
       });
       if (gamesIdsToSearchInApi.length) {
         this.client.helix.games.getGamesByIds(gamesIdsToSearchInApi).then(
-          (gamesFromApi) => {
-            this.addGamesToStorage(gamesFromApi);
+          async (gamesFromApi) => {
+            await this.addGamesToStorage(gamesFromApi);
             resolve(gamesResult.concat(gamesFromApi));
           },
           (error) => {
@@ -133,13 +133,13 @@ export class TwitchService extends StreamingService {
     });
   }
 
-  private addGamesToStorage(gamesArray) {
+  private async addGamesToStorage(gamesArray) {
     const addArray = gamesArray.map((game) => {
       return {
         [this.getGameKey(game.id)]: game.name,
       };
     });
-    this.dataStorage.serviceDataSet(this.name, addArray);
+    return await this.dataAccess.serviceDataSet(this.name, addArray);
   }
 
   private async getUserDataByName(channels) {
@@ -168,12 +168,17 @@ export class TwitchService extends StreamingService {
   }
 
   private addUsersToStorage(usersArray) {
-    const dataMap = {};
+    const promises = [];
     usersArray.forEach((user) => {
-      dataMap[this.dataStorage.getSubscriptionName(this.name, user.name)] =
-        this.mapUsersDataToAdditionaData(user);
+      promises.push(
+        this.dataAccess.updateSubscriptionAdditionalInfo(
+          this.dataAccess.getSubscriptionName(this.name, user.name),
+          this.mapUsersDataToAdditionaData(user)
+        )
+      );
     });
-    this.dataStorage.updateSubscriptionAdditionalInfoMap(dataMap);
+
+    return Promise.all(promises);
   }
 
   private mapUsersDataToAdditionaData(user) {

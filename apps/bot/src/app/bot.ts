@@ -5,14 +5,12 @@ import {
   MessageEmbed,
 } from 'discord.js';
 import { CommandCenter } from './command-center';
-import { DataStorage } from './data-storage';
 import { GoodgameService } from './subscriptions/goodgame';
 import { TwitchService } from './subscriptions/twitch';
 import { StreamingServiceConfig } from './subscriptions/streaming-service';
 import { BaseService } from './subscriptions/base-service';
 import { getLogger } from './services/logger';
 import { Logger } from 'winston';
-import Timeout = NodeJS.Timeout;
 import {
   EVENT_ALL,
   EVENT_BROADCAST_ADD,
@@ -26,18 +24,18 @@ import {
 import { getServiceInfo } from './services/helper';
 import * as dateAndTime from 'date-and-time';
 import { DataAccess } from '../../../../libs/data-access/src';
+import { SettingName } from '../../../../libs/data-access/src/lib/setting-name';
+import Timeout = NodeJS.Timeout;
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
 export class Bot {
-  private readonly DB_FILE = 'db.json';
   private readonly INTERVAL: number = 10000;
   private readonly START_COLOR = '#43bf35';
   private readonly STOP_COLOR = '#a8a8a8';
   private readonly ANNOUNCEMENT_COLOR = '#287bba';
   private readonly HTTP_PERMISSIONS_ERROR_STATUS = 403;
 
-  private dataStorage: DataStorage;
   private dataAccess: DataAccess;
   private client: Client;
   private commandCenter: CommandCenter;
@@ -54,7 +52,6 @@ export class Bot {
   }
 
   private async init() {
-    this.dataStorage = new DataStorage(this.DB_FILE);
     this.logger = getLogger();
     this.dataAccess = new DataAccess(
       process.env.MONGO_URL,
@@ -94,8 +91,8 @@ export class Bot {
 
   getServices(): Array<BaseService> {
     return [
-      new GoodgameService(this.dataStorage, this.getStreamingServiceConfig()),
-      new TwitchService(this.dataStorage, this.getStreamingServiceConfig()),
+      new GoodgameService(this.dataAccess, this.getStreamingServiceConfig()),
+      new TwitchService(this.dataAccess, this.getStreamingServiceConfig()),
     ];
   }
 
@@ -141,12 +138,12 @@ export class Bot {
 
   _guildCreate(server) {
     this.logger.info(`Discord.js guildCreate ${server.name} ${server.id}`);
-    this.dataStorage.serverAdd(server);
+    this.dataAccess.serverAdd(server.id, server.name);
   }
 
   _guildDelete(server) {
     this.logger.info(`Discord.js guildDelete ${server.name} ${server.id}`);
-    this.dataStorage.serverRemove(server.id);
+    this.dataAccess.serverRemove(server.id);
   }
 
   _updateSubscriptions() {
@@ -175,7 +172,7 @@ export class Bot {
   }
 
   _onEvents(service, eventName, params) {
-    params.servers.forEach((server) => {
+    params.servers.forEach(async (server) => {
       let msg;
       let embed;
       let messageCustomizable;
@@ -185,7 +182,7 @@ export class Bot {
           `Server not found! %s. Removing it from DB`,
           server.serverId
         );
-        this.dataStorage.serverRemove(server.serverId);
+        await this.dataAccess.serverRemove(server.serverId);
         return;
       }
       const channel = <BaseGuildTextChannel>(
@@ -196,23 +193,23 @@ export class Bot {
           `Channel not found! %s. Removing it from DB`,
           server.channelId
         );
-        this.dataStorage.subscriptionRemoveList(
+        await this.dataAccess.subscriptionRemoveList(
           server.serverId,
           server.channelId
         );
         return;
       }
-      const isEmbedRemoved = this.dataStorage.getSettingMessage(
-        this.dataStorage.SETTING_EMBED_REMOVE,
+      const isEmbedRemoved = await this.dataAccess.getSettingMessage(
+        SettingName.EmbedRemove,
         server.serverId
       );
       switch (eventName) {
         case EVENT_GO_LIVE:
-          messageCustomizable = this._getMessage(
+          messageCustomizable = await this._getMessage(
             params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
-            this.dataStorage.SETTING_STREAM_START_MESSAGE,
+            SettingName.StreamStart,
             `@everyone Стрим на канале **{channel}** начался!`
           );
           if (messageCustomizable) {
@@ -244,11 +241,11 @@ export class Bot {
           }
           break;
         case EVENT_GO_OFFLINE:
-          messageCustomizable = this._getMessage(
+          messageCustomizable = await this._getMessage(
             params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
-            this.dataStorage.SETTING_STREAM_STOP_MESSAGE,
+            SettingName.StreamStop,
             `Стрим на канале **{channel}** закончился`
           );
           if (messageCustomizable) {
@@ -256,11 +253,11 @@ export class Bot {
           }
           break;
         case EVENT_GO_LIVE_AGAIN:
-          messageCustomizable = this._getMessage(
+          messageCustomizable = await this._getMessage(
             params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
-            this.dataStorage.SETTING_STREAM_PROCEED_MESSAGE,
+            SettingName.StreamProceed,
             `Стрим на канале **{channel}** продолжается!`
           );
           if (messageCustomizable) {
@@ -292,11 +289,11 @@ export class Bot {
           msg = `Канал ${params.channel} не найден`;
           break;
         case EVENT_BROADCAST_ADD:
-          messageCustomizable = this._getMessage(
+          messageCustomizable = await this._getMessage(
             params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
-            this.dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE,
+            SettingName.AnnouncementAdd,
             `Анонс на канале {channel}:`
           );
           if (messageCustomizable) {
@@ -337,11 +334,11 @@ export class Bot {
           }
           break;
         case EVENT_BROADCAST_CHANGE:
-          messageCustomizable = this._getMessage(
+          messageCustomizable = await this._getMessage(
             params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
-            this.dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE,
+            SettingName.AnnouncementEdit,
             `Анонс на канале {channel} изменен:`
           );
           if (messageCustomizable) {
@@ -414,11 +411,11 @@ export class Bot {
           }
           break;
         case EVENT_BROADCAST_REMOVE:
-          messageCustomizable = this._getMessage(
+          messageCustomizable = await this._getMessage(
             params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
-            this.dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE,
+            SettingName.AnnouncementRemove,
             `Анонс на канале {channel} отменен`
           );
           if (messageCustomizable) {
@@ -457,7 +454,7 @@ export class Bot {
               `Discord send error ${error.httpStatus} ${server.serverId}/${server.channelId}`
             );
             if (error.httpStatus === this.HTTP_PERMISSIONS_ERROR_STATUS) {
-              this.dataStorage.subscriptionRemoveList(
+              return this.dataAccess.subscriptionRemoveList(
                 server.serverId,
                 server.channelId
               );
@@ -475,12 +472,12 @@ export class Bot {
     });
   }
 
-  _getMessage(url, serverId, data, setting, defaultMessage) {
+  async _getMessage(url, serverId, data, setting, defaultMessage) {
     const channel = getServiceInfo(url);
-    let message = this.dataStorage.getSettingMessage(
+    let message = await this.dataAccess.getSettingMessage(
       setting,
       serverId,
-      this.dataStorage.getSubscriptionName(channel.service, channel.channel)
+      this.dataAccess.getSubscriptionName(channel.service, channel.channel)
     );
     if (message === undefined || message === null) {
       message = defaultMessage;
@@ -490,9 +487,9 @@ export class Bot {
     message = message.replace('{here}', '@here');
     message = message.replace('{url}', data.subscription.url);
     if (
-      setting === this.dataStorage.SETTING_ANNOUNCEMENT_ADD_MESSAGE ||
-      setting === this.dataStorage.SETTING_ANNOUNCEMENT_EDIT_MESSAGE ||
-      setting === this.dataStorage.SETTING_ANNOUNCEMENT_REMOVE_MESSAGE
+      setting === SettingName.AnnouncementAdd ||
+      setting === SettingName.AnnouncementEdit ||
+      setting === SettingName.AnnouncementRemove
     ) {
       if (data.broadcast) {
         message = message.replace(
