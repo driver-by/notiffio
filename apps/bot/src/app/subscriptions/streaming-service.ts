@@ -198,6 +198,7 @@ export abstract class StreamingService extends BaseService {
       savedData.lastCheck = now;
       savedData.lastInfo = subscription;
       savedData.notFoundTimes = 0;
+      savedData.lastCheckStarted = null;
       promises.push(
         this.dataAccess.updateSubscription(subscriptionName, savedData)
       );
