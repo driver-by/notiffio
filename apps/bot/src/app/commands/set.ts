@@ -14,7 +14,7 @@ const removeFirstWord = (text) => {
   return text.substr(index + 1);
 };
 
-export default function set(command, msg, dataAccess: DataAccess) {
+export default async function set(command, msg, dataAccess: DataAccess) {
   let text;
   if (command.params.length) {
     const setting = command.params[0];
@@ -38,29 +38,32 @@ export default function set(command, msg, dataAccess: DataAccess) {
             channel.channel
           );
           if (setTextTo === DEFAULT_COMMAND) {
-            // result = dataAccess.removeSettingMessage(
-            //   setting,
-            //   msg.guild.id,
-            //   subscriptionName
-            // );
+            result = await dataAccess.removeSettingMessage(
+              setting,
+              msg.guild.id,
+              subscriptionName
+            );
           } else {
-            // result = dataAccess.updateSettingMessage(
-            //   setting,
-            //   msg.guild.id,
-            //   setTextTo,
-            //   subscriptionName
-            // );
+            result = await dataAccess.updateSettingMessage(
+              setting,
+              msg.guild.id,
+              setTextTo,
+              subscriptionName
+            );
           }
         } else {
           setTextTo = removeFirstWord(removeFirstWord(command.text));
           if (setTextTo === DEFAULT_COMMAND) {
-            // result = dataAccess.removeSettingMessage(setting, msg.guild.id);
+            result = await dataAccess.removeSettingMessage(
+              setting,
+              msg.guild.id
+            );
           } else {
-            // result = dataAccess.updateSettingMessage(
-            //   setting,
-            //   msg.guild.id,
-            //   setTextTo
-            // );
+            result = await dataAccess.updateSettingMessage(
+              setting,
+              msg.guild.id,
+              setTextTo
+            );
           }
         }
         if (setTextTo === DEFAULT_COMMAND) {
@@ -76,14 +79,14 @@ export default function set(command, msg, dataAccess: DataAccess) {
         }
         break;
       case SettingName.EmbedRemove:
-        // dataAccess.updateSettingMessage(setting, msg.guild.id, true);
+        await dataAccess.updateSettingMessage(setting, msg.guild.id, true);
         text = `Embed сообщения отключены`;
         break;
       case SettingName.EmbedAllow:
-        // dataAccess.removeSettingMessage(
-        //   SettingName.EmbedRemove,
-        //   msg.guild.id
-        // );
+        await dataAccess.removeSettingMessage(
+          SettingName.EmbedRemove,
+          msg.guild.id
+        );
         text = `Embed сообщения включены`;
         break;
       default:

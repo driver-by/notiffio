@@ -48,7 +48,7 @@ export abstract class BaseService {
     );
   }
 
-  processChannelStatuses(subscriptionsToCheck, result) {}
+  async processChannelStatuses(subscriptionsToCheck, result): Promise<any> {}
 
   /**
    * Emit event by name with params

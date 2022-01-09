@@ -1,14 +1,14 @@
 import { StreamingService, StreamingServiceConfig } from './streaming-service';
-import { DataStorage } from '../data-storage';
 import axios from 'axios';
 import { ChannelDetails } from './channel-details';
 import { Status } from '../../../../../libs/data-access/src/lib/status';
+import { DataAccess } from '../../../../../libs/data-access/src';
 
 const MAX_CHANNELS_PER_REQUEST = 50;
 
 export class GoodgameService extends StreamingService {
-  constructor(dataStorage: DataStorage, config: StreamingServiceConfig) {
-    super(dataStorage, config);
+  constructor(dataAccess: DataAccess, config: StreamingServiceConfig) {
+    super(dataAccess, config);
     this.name = 'goodgame.ru';
   }
 

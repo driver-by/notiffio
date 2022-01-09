@@ -7,8 +7,8 @@ export class CommandCenter {
 
   private readonly dataAccess: DataAccess;
 
-  constructor(dataStorage: DataAccess) {
-    this.dataAccess = dataStorage;
+  constructor(dataAccess: DataAccess) {
+    this.dataAccess = dataAccess;
   }
 
   process(msg: Message) {

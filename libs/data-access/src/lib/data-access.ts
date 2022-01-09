@@ -54,6 +54,11 @@ enum Collection {
 
 export class DataAccess {
   private readonly SUBSCRIPTION_NAME_DELIMITER = '/';
+  // 20 minutes
+  private readonly MAX_UPDATE_INTERVAL = 20 * 60 * 1000;
+  private readonly INCREASE_UPDATE_INTERVAL_FROM_DAYS = 14;
+  private readonly INCREASE_UPDATE_INTERVAL_BY_MINUTES = 2;
+  private readonly WEEK_DAYS = 7;
 
   private readonly url: string;
   private readonly dbName: string;
@@ -81,14 +86,13 @@ export class DataAccess {
   }
 
   onErrorLog(callback: GenericListener) {
-    this.client.addListener('error', callback);
+    this.client.addListener('commandFailed', callback);
   }
 
   async subscriptionAdd(
     serverId: string,
     channelId: string,
     serverName: string,
-    channelName: string,
     service: string,
     channel: string
   ) {
@@ -125,8 +129,13 @@ export class DataAccess {
     );
   }
 
+  async serverAdd(serverId: string, serverName: string) {
+    const servers = this.db.collection<Server>(Collection.Servers);
+    return servers.insertOne({ id: serverId, name: serverName });
+  }
+
   async serverRemove(serverId: string) {
-    const servers = this.db.collection(Collection.Servers);
+    const servers = this.db.collection<Server>(Collection.Servers);
     await servers.deleteOne(<Server>{ id: serverId });
     await this.removeServerFromSubscription(serverId);
     await this.removeSubscriptionsWithNoServers();
@@ -177,7 +186,7 @@ export class DataAccess {
   async updateSettingMessage(
     setting: SettingName,
     serverId: string,
-    text: string,
+    text: any,
     subscriptionName: string | null = null
   ) {
     if (subscriptionName) {
@@ -232,6 +241,110 @@ export class DataAccess {
     );
   }
 
+  async subscriptionsGetByLastCheckAndUpdate(
+    updateInterval: number,
+    service: string
+  ): Promise<Subscription[]> {
+    const subscriptions = this.db.collection<Subscription>(
+      Collection.Subscriptions
+    );
+    const subs = await subscriptions.find(
+      {
+        service,
+        // lastCheckStarted empty or earlier than max update interval (checking process dropped for some reason?)
+        lastCheckStarted: {
+          $or: [
+            { $lte: Date.now() - this.MAX_UPDATE_INTERVAL },
+            { $eq: null },
+            { $eq: undefined },
+          ],
+        },
+        lastCheck: {
+          $lte: Date.now() - updateInterval,
+        },
+      },
+      {
+        sort: { lastCheck: 1 },
+      }
+    );
+    const result = [];
+    await subs.forEach((subscription) => {
+      const updateIntervalIncreasedIfNoStreamingForALongTime =
+        this.getUpdateIntervalIncreasedIfNoStreamingForALongTime(
+          updateInterval,
+          subscription.statusChangeTimestamp
+        );
+      if (
+        subscription.lastCheck <=
+        Date.now() - updateIntervalIncreasedIfNoStreamingForALongTime
+      ) {
+        result.push(subscription);
+      }
+    });
+
+    return result;
+  }
+
+  async setLastCheckStartedToNow(subscriptionsData: Subscription[]) {
+    if (!subscriptionsData?.length) {
+      return;
+    }
+    const subscriptions = this.db.collection<Subscription>(
+      Collection.Subscriptions
+    );
+    const subscriptionsNames = subscriptionsData.map((s) => s.name);
+    return await subscriptions.updateMany(
+      { name: { $in: subscriptionsNames } },
+      { $set: { lastCheckStarted: Date.now() } }
+    );
+  }
+
+  async subscriptionRemoveList(serverId: string, channelId?: string) {
+    const subscriptions = this.db.collection<Subscription>(
+      Collection.Subscriptions
+    );
+    const serversCondition = channelId ? { serverId, channelId } : { serverId };
+    await subscriptions.updateMany(
+      {},
+      {
+        $pull: { servers: serversCondition },
+      }
+    );
+    await this.removeSubscriptionsWithNoServers();
+  }
+
+  async updateSubscription(
+    subscriptionName: string,
+    subscription: Subscription
+  ) {
+    const subscriptions = this.db.collection<Subscription>(
+      Collection.Subscriptions
+    );
+    return await subscriptions.updateOne(
+      { name: subscriptionName },
+      {
+        $set: subscription,
+      }
+    );
+  }
+
+  async updateSubscriptionAdditionalInfo(subscriptionName, additionalInfo) {
+    const subscriptions = this.db.collection<Subscription>(
+      Collection.Subscriptions
+    );
+    return subscriptions.updateOne(
+      { name: subscriptionName },
+      { additionalInfo: { $set: additionalInfo } }
+    );
+  }
+
+  async getSubscriptionsList(serverId: string): Promise<Subscription[]> {
+    const subscriptions = this.db.collection<Subscription>(
+      Collection.Subscriptions
+    );
+    return subscriptions.find({ 'servers.serverId': serverId }).toArray();
+  }
+
   private async afterConnect(client: MongoClient) {
     this.db = await client.db(this.dbName);
     this.initSchema(this.db);
@@ -240,12 +353,18 @@ export class DataAccess {
   private async initSchema(db: Db) {
     const servers = db.collection(Collection.Servers);
     const subscriptions = db.collection(Collection.Subscriptions);
+    const serviceData = db.collection(Collection.ServiceData);
     await servers.createIndex({ id: 'text' });
     await servers.createIndex({ id: 1 }, { unique: true });
     await subscriptions.createIndex({ name: 'text' });
     await subscriptions.createIndex({ name: 1 }, { unique: true });
-    await subscriptions.createIndex({ service: 'text', key: 'text' });
-    await subscriptions.createIndex({ service: 1, key: 1 }, { unique: true });
+    await subscriptions.createIndex({
+      service: 1,
+      lastCheckStarted: 1,
+      lastCheck: 1,
+    });
+    await serviceData.createIndex({ service: 'text', key: 'text' });
+    await serviceData.createIndex({ service: 1, key: 1 }, { unique: true });
   }
 
   private getSubscriptionServerComparator(serverId, channelId) {
@@ -276,7 +395,7 @@ export class DataAccess {
     serverId: string,
     subscriptionName: string,
     settingName: SettingName,
-    value: string
+    value: any
   ) {
     const servers = this.db.collection<Server>(Collection.Servers);
     return await servers.updateOne(
@@ -293,7 +412,7 @@ export class DataAccess {
   private async serverSettingSet(
     serverId: string,
     settingName: SettingName,
-    value: string
+    value: any
   ) {
     const servers = this.db.collection<Server>(Collection.Servers);
     return await servers.updateOne(
@@ -324,6 +443,39 @@ export class DataAccess {
     const setting = await servers.findOne({ id: serverId });
 
     return setting?.settings?.[subscriptionName]?.[settingName] || undefined;
+  }
+
+  private getUpdateIntervalIncreasedIfNoStreamingForALongTime(
+    updateInterval: number,
+    statusChangeTimestamp: number
+  ) {
+    // Increase check period if no stream for a long time
+    const statusChangeTimestampDiffDays = statusChangeTimestamp
+      ? (Date.now() - statusChangeTimestamp) / (1000 * 60 * 60 * 24)
+      : 0;
+    let updateIntervalIncreasedIfNoStreamingForALongTime = updateInterval;
+    // Starting from 2 weeks increase by 2 minutes for every week until max
+    if (
+      statusChangeTimestampDiffDays >= this.INCREASE_UPDATE_INTERVAL_FROM_DAYS
+    ) {
+      updateIntervalIncreasedIfNoStreamingForALongTime =
+        updateInterval +
+        this.INCREASE_UPDATE_INTERVAL_BY_MINUTES *
+          Math.ceil(
+            (statusChangeTimestampDiffDays -
+              this.INCREASE_UPDATE_INTERVAL_FROM_DAYS) /
+              this.WEEK_DAYS
+          );
+    }
+    if (
+      updateIntervalIncreasedIfNoStreamingForALongTime >
+      this.MAX_UPDATE_INTERVAL
+    ) {
+      updateIntervalIncreasedIfNoStreamingForALongTime =
+        this.MAX_UPDATE_INTERVAL;
+    }
+
+    return updateIntervalIncreasedIfNoStreamingForALongTime;
   }
 
   private getSafeVariableName(varName) {
