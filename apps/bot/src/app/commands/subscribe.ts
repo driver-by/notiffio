@@ -5,7 +5,6 @@ export default async function subscribe(command, msg, dataAccess: DataAccess) {
   const serverId = msg.guild.id;
   const serverName = msg.guild.name;
   const channelId = msg.channel.id;
-  const channelName = msg.channel.name;
   const subscribeTo = getServiceInfo(command.main);
   let wasSubscribed = false;
   let isSubscribed = false;
