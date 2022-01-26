@@ -68,7 +68,7 @@ export default async function set(command, msg, dataAccess: DataAccess) {
         }
         if (setTextTo === DEFAULT_COMMAND) {
           text = `Настройка выставлена по-умолчанию`;
-        } else if (result === setTextTo) {
+        } else if (result.modifiedCount > 0) {
           if (setTextTo === '') {
             text = `Сообщение больше показываться не будет (передан пустой текст)`;
           } else {
