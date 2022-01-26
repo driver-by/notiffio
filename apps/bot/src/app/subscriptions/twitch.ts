@@ -136,7 +136,8 @@ export class TwitchService extends StreamingService {
   private async addGamesToStorage(gamesArray) {
     const addArray = gamesArray.map((game) => {
       return {
-        [this.getGameKey(game.id)]: game.name,
+        key: this.getGameKey(game.id),
+        value: game.name,
       };
     });
     return await this.dataAccess.serviceDataSet(this.name, addArray);
