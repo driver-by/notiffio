@@ -223,9 +223,9 @@ export class DataAccess {
     dataKeys: string[]
   ): Promise<ServiceData[]> {
     const serviceData = this.db.collection<ServiceData>(Collection.ServiceData);
-    const saveServiceName = this.getSafeVariableName(serviceName);
+    const safeVariableName = this.getSafeVariableName(serviceName);
     const result = await serviceData.find({
-      service: saveServiceName,
+      service: safeVariableName,
       key: { $in: dataKeys },
     });
     return result.toArray();
@@ -233,14 +233,15 @@ export class DataAccess {
 
   async serviceDataSet(serviceName: string, keyValue: Record<string, any>[]) {
     const serviceData = this.db.collection<ServiceData>(Collection.ServiceData);
+    const safeVariableName = this.getSafeVariableName(serviceName);
     const promises = [];
     keyValue.forEach((data) => {
       promises.push(
         serviceData.updateOne(
-          { service: serviceName, key: data.key },
-          { $set: { value: data.value } }
-        ),
-        { upsert: true }
+          { service: safeVariableName, key: data.key },
+          { $set: { value: data.value } },
+          { upsert: true }
+        )
       );
     });
     return Promise.all(promises);
