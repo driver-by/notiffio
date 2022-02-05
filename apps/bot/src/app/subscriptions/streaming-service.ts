@@ -83,6 +83,7 @@ export abstract class StreamingService extends BaseService {
       const now = Date.now();
       // Don't send notification if last check was too long ago (bot was switched off)
       const skipNotificationAsItIsExpired =
+        subscriptionData.lastCheck &&
         now - subscriptionData.lastCheck > this.NOTIFICATION_EXPIRED;
       if (subscription.status !== subscriptionData.lastStatus) {
         const firstCheck = !subscriptionData.lastStatus;
