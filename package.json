@@ -11,13 +11,13 @@
   "author": "Sergei Tomin",
   "license": "MIT",
   "dependencies": {
+    "@twurple/api": "^5.0.17",
+    "@twurple/auth": "^5.0.17",
     "axios": "^0.21.2",
     "date-and-time": "^0.14.2",
     "discord.js": "^13.1.0",
     "dotenv": "^7.0.0",
     "lowdb": "^1.0.0",
-    "twitch": "^4.6.7",
-    "twitch-auth": "^4.6.7",
     "winston": "^3.3.3"
   },
   "devDependencies": {

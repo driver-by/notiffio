@@ -1,7 +1,7 @@
 const ChannelDetails = require('../models/channel-details');
 const StreamingService = require('./streaming-service');
-const {ApiClient} = require('twitch');
-const {ClientCredentialsAuthProvider} = require('twitch-auth');
+const {ApiClient} = require('@twurple/api');
+const {ClientCredentialsAuthProvider} = require('@twurple/auth');
 const {STATUS_DEAD, STATUS_LIVE} = require('../models/statuses');
 
 const MAX_CHANNELS_PER_REQUEST = 90; // Max of a twitch API is 100
@@ -29,7 +29,7 @@ class TwitchService extends StreamingService {
                 this._getUserDataByName(channelsPart)
                     .then(users => {
                         usersAll = usersAll.concat(users);
-                        return this._client.helix.streams
+                        return this._client.streams
                             .getStreamsPaginated({
                                 userId: users.map(user => user.id)
                             })
@@ -99,7 +99,7 @@ class TwitchService extends StreamingService {
                 }
             });
             if (gamesIdsToSearchInApi.length) {
-                this._client.helix.games.getGamesByIds(gamesIdsToSearchInApi)
+                this._client.games.getGamesByIds(gamesIdsToSearchInApi)
                     .then(gamesFromApi => {
                         this._addGamesToStorage(gamesFromApi);
                         resolve(gamesResult.concat(gamesFromApi))
@@ -135,7 +135,7 @@ class TwitchService extends StreamingService {
             }
         });
         const promiseNameSearch = channelNamesToSearch.length
-            ? this._client.helix.users.getUsersByNames(channelNamesToSearch)
+            ? this._client.users.getUsersByNames(channelNamesToSearch)
             : Promise.resolve([]);
 
         return promiseNameSearch.then(users => {
