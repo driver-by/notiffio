@@ -116,8 +116,8 @@ export default async function set(command, msg, dataAccess: DataAccess) {
       `**!notify set ${SettingName.EmbedRemove}** - отменить использование Embed сообщений\n` +
       `**!notify set ${SettingName.EmbedAllow}** - разрешить использование Embed сообщений\n\n` +
       `Другие "магические" строки кроме {channel}, заменяющиеся в сообщении:\n` +
-      `**{everyone}** - @everyone (чтобы не спамить @everyone сообщениями во время настройки)\n` +
-      `**{here}** - @here (чтобы не спамить @here сообщениями во время настройки)\n` +
+      `**{everyone}** - \`@everyone\` (чтобы не спамить \`@everyone\` сообщениями во время настройки)\n` +
+      `**{here}** - \`@here\` (чтобы не спамить \`@here\` сообщениями во время настройки)\n` +
       `**{channel}** - название канала\n` +
       `**{url}** - URL канала\n` +
       `**{game}** - игра на стриме или в анонсе\n` +
