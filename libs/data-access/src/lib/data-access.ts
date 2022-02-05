@@ -431,7 +431,9 @@ export class DataAccess {
       <Server>{ id: serverId },
       {
         $set: {
-          [`settingsBySubscription.${subscriptionName}.${settingName}`]: value,
+          [`settingsBySubscription.${this.getSafeVariableName(
+            subscriptionName
+          )}.${settingName}`]: value,
         },
       },
       { upsert: true }
@@ -471,7 +473,11 @@ export class DataAccess {
 
     const setting = await servers.findOne({ id: serverId });
 
-    return setting?.settings?.[subscriptionName]?.[settingName] || undefined;
+    return (
+      setting?.settingsBySubscription?.[
+        this.getSafeVariableName(subscriptionName)
+      ]?.[settingName] || undefined
+    );
   }
 
   private getUpdateIntervalIncreasedIfNoStreamingForALongTime(
