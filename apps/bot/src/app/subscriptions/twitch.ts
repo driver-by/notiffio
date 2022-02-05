@@ -1,6 +1,6 @@
 import { StreamingService, StreamingServiceConfig } from './streaming-service';
-import { ClientCredentialsAuthProvider } from 'twitch-auth';
-import { ApiClient } from 'twitch';
+import { ClientCredentialsAuthProvider } from '@twurple/auth';
+import { ApiClient } from '@twurple/api';
 import { ChannelDetails } from './channel-details';
 import { Status } from '../../../../../libs/data-access/src/lib/status';
 import { DataAccess } from '../../../../../libs/data-access/src';
@@ -32,7 +32,7 @@ export class TwitchService extends StreamingService {
         this.getUserDataByName(channelsPart)
           .then((users) => {
             usersAll = usersAll.concat(users);
-            return this.client.helix.streams
+            return this.client.streams
               .getStreamsPaginated({
                 userId: users.map((user) => user.id),
               })
@@ -118,7 +118,7 @@ export class TwitchService extends StreamingService {
         }
       });
       if (gamesIdsToSearchInApi.length) {
-        this.client.helix.games.getGamesByIds(gamesIdsToSearchInApi).then(
+        this.client.games.getGamesByIds(gamesIdsToSearchInApi).then(
           async (gamesFromApi) => {
             await this.addGamesToStorage(gamesFromApi);
             resolve(gamesResult.concat(gamesFromApi));
@@ -159,7 +159,7 @@ export class TwitchService extends StreamingService {
       }
     });
     const promiseNameSearch = channelNamesToSearch.length
-      ? this.client.helix.users.getUsersByNames(channelNamesToSearch)
+      ? this.client.users.getUsersByNames(channelNamesToSearch)
       : Promise.resolve([]);
 
     return promiseNameSearch.then((users) => {
