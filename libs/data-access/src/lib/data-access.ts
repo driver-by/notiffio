@@ -514,6 +514,6 @@ export class DataAccess {
   }
 
   private getSafeVariableName(varName) {
-    return varName.replace(/[\.]/gi, '');
+    return varName ? varName.replace(/[\.]/gi, '') : varName;
   }
 }
