@@ -427,17 +427,27 @@ export class DataAccess {
     value: any
   ) {
     const servers = this.db.collection<Server>(Collection.Servers);
-    return await servers.updateOne(
-      <Server>{ id: serverId },
-      {
-        $set: {
+    if (value === undefined) {
+      return await servers.updateOne(<Server>{ id: serverId }, {
+        $unset: {
           [`settingsBySubscription.${this.getSafeVariableName(
             subscriptionName
-          )}.${settingName}`]: value,
+          )}.${settingName}`]: '',
         },
-      },
-      { upsert: true }
-    );
+      });
+    } else {
+      return await servers.updateOne(
+        <Server>{ id: serverId },
+        {
+          $set: {
+            [`settingsBySubscription.${this.getSafeVariableName(
+              subscriptionName
+            )}.${settingName}`]: value,
+          },
+        },
+        { upsert: true }
+      );
+    }
   }
 
   private async serverSettingSet(
@@ -446,11 +456,17 @@ export class DataAccess {
     value: any
   ) {
     const servers = this.db.collection<Server>(Collection.Servers);
-    return await servers.updateOne(
-      <Server>{ id: serverId },
-      { $set: { [`settings.${settingName}`]: value } },
-      { upsert: true }
-    );
+    if (value === undefined) {
+      return await servers.updateOne(<Server>{ id: serverId }, {
+        $unset: { [`settings.${settingName}`]: '' },
+      });
+    } else {
+      return await servers.updateOne(
+        <Server>{ id: serverId },
+        { $set: { [`settings.${settingName}`]: value } },
+        { upsert: true }
+      );
+    }
   }
 
   private async serverSettingsGet(
