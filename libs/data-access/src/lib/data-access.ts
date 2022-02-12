@@ -257,13 +257,13 @@ export class DataAccess {
     const subs = await subscriptions.find(
       {
         service,
-        // lastCheckStarted empty or earlier than max update interval (checking process dropped for some reason?)
+        // lastCheckStarted empty or earlier than update interval (checking process dropped for some reason?)
         $and: [
           {
             $or: [
               {
                 lastCheckStarted: {
-                  $lte: Date.now() - this.MAX_UPDATE_INTERVAL,
+                  $lte: Date.now() - updateInterval,
                 },
               },
               {
