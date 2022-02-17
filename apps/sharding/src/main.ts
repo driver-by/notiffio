@@ -1,12 +1,14 @@
-import { ShardingManager } from 'discord.js';
+import { ShardingManager, ShardingManagerOptions } from 'discord.js';
 import 'dotenv/config';
 import { getLogger } from '../../../libs/logger/src';
 
-const SECRET_KEY = process.env.SECRET_KEY;
-const manager = new ShardingManager(`${__dirname}/../bot/main.js`, {
-  token: SECRET_KEY,
-  totalShards: 2,
-});
+const options: ShardingManagerOptions = {
+  token: process.env.SECRET_KEY,
+};
+if (process.env.TOTAL_SHARDS) {
+  options.totalShards = <number | 'auto'>process.env.TOTAL_SHARDS;
+}
+const manager = new ShardingManager(`${__dirname}/../bot/main.js`, options);
 
 const logger = getLogger();
 
