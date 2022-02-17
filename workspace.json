@@ -74,6 +74,58 @@
         }
       },
       "tags": []
+    },
+    "sharding": {
+      "root": "apps/sharding",
+      "sourceRoot": "apps/sharding/src",
+      "projectType": "application",
+      "targets": {
+        "build": {
+          "executor": "@nrwl/node:build",
+          "outputs": ["{options.outputPath}"],
+          "options": {
+            "outputPath": "dist/apps/sharding",
+            "main": "apps/sharding/src/main.ts",
+            "tsConfig": "apps/sharding/tsconfig.app.json",
+            "assets": ["apps/sharding/src/assets"]
+          },
+          "configurations": {
+            "production": {
+              "optimization": true,
+              "extractLicenses": true,
+              "inspect": false,
+              "fileReplacements": [
+                {
+                  "replace": "apps/sharding/src/environments/environment.ts",
+                  "with": "apps/sharding/src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "executor": "@nrwl/node:execute",
+          "options": {
+            "buildTarget": "sharding:build"
+          }
+        },
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["apps/sharding/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/apps/sharding"],
+          "options": {
+            "jestConfig": "apps/sharding/jest.config.js",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "tags": []
     }
   }
 }
