@@ -9,7 +9,6 @@ import { GoodgameService } from './subscriptions/goodgame';
 import { TwitchService } from './subscriptions/twitch';
 import { StreamingServiceConfig } from './subscriptions/streaming-service';
 import { BaseService } from './subscriptions/base-service';
-import { getLogger } from './services/logger';
 import { Logger } from 'winston';
 import {
   EVENT_ALL,
@@ -26,6 +25,7 @@ import * as dateAndTime from 'date-and-time';
 import { DataAccess } from '../../../../libs/data-access/src';
 import { SettingName } from '../../../../libs/data-access/src/lib/setting-name';
 import Timeout = NodeJS.Timeout;
+import { getLogger } from '../../../../libs/logger/src';
 
 const SECRET_KEY = process.env.SECRET_KEY;
 

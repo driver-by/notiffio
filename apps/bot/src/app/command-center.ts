@@ -9,8 +9,8 @@ import {
 } from 'discord.js';
 import { Commands } from './commands';
 import { DataAccess } from '../../../../libs/data-access/src';
-import { getLogger } from './services/logger';
 import { Logger } from 'winston';
+import { getLogger } from '../../../../libs/logger/src';
 
 export class CommandCenter {
   private readonly COMMAND_PREFIX = '!notify ';
