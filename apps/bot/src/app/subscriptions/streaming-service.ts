@@ -3,7 +3,6 @@
  * Don't create instances of this class
  */
 import { BaseService } from './base-service';
-import { getLogger } from '../services/logger';
 import {
   EVENT_BROADCAST_ADD,
   EVENT_BROADCAST_CHANGE,
@@ -16,6 +15,7 @@ import {
 import { ChannelDetails } from './channel-details';
 import { Status } from '../../../../../libs/data-access/src/lib/status';
 import { DataAccess, Subscription } from '../../../../../libs/data-access/src';
+import { getLogger } from '../../../../../libs/logger/src';
 
 const logger = getLogger();
 
