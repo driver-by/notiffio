@@ -227,9 +227,11 @@ export class Bot {
                   this._setDefaultTextIfEmpty(params.subscription.title.trim())
                 )
                 .setAuthor(
-                  params.subscription.nickname,
-                  params.subscription.avatar,
-                  params.subscription.url
+                  this._getAuthor(
+                    params.subscription.nickname,
+                    params.subscription.avatar,
+                    params.subscription.url
+                  )
                 )
                 .addField(
                   'Игра:',
@@ -273,9 +275,11 @@ export class Bot {
                   this._setDefaultTextIfEmpty(params.subscription.title.trim())
                 )
                 .setAuthor(
-                  params.subscription.nickname,
-                  params.subscription.avatar,
-                  params.subscription.url
+                  this._getAuthor(
+                    params.subscription.nickname,
+                    params.subscription.avatar,
+                    params.subscription.url
+                  )
                 )
                 .addField(
                   'Игра:',
@@ -314,9 +318,11 @@ export class Bot {
                   this._setDefaultTextIfEmpty(params.broadcast.title.trim())
                 )
                 .setAuthor(
-                  params.subscription.nickname,
-                  params.subscription.avatar,
-                  params.subscription.url
+                  this._getAuthor(
+                    params.subscription.nickname,
+                    params.subscription.avatar,
+                    params.subscription.url
+                  )
                 )
                 .addField(
                   'Начало:',
@@ -373,9 +379,11 @@ export class Bot {
                   this._setDefaultTextIfEmpty(params.broadcast.title.trim())
                 )
                 .setAuthor(
-                  params.subscription.nickname,
-                  params.subscription.avatar,
-                  params.subscription.url
+                  this._getAuthor(
+                    params.subscription.nickname,
+                    params.subscription.avatar,
+                    params.subscription.url
+                  )
                 );
               if (params.broadcast.start !== params.broadcastPrevious.start) {
                 embed.addField(
@@ -433,9 +441,11 @@ export class Bot {
                   )
                 )
                 .setAuthor(
-                  params.subscription.nickname,
-                  params.subscription.avatar,
-                  params.subscription.url
+                  this._getAuthor(
+                    params.subscription.nickname,
+                    params.subscription.avatar,
+                    params.subscription.url
+                  )
                 )
                 .addField(
                   'Игра:',
@@ -560,5 +570,13 @@ export class Bot {
   _generateImageLink(img) {
     // Add timestamp param to prevent discord preview caching
     return `${img}?_=${Date.now()}`;
+  }
+
+  _getAuthor(name, iconURL, url) {
+    return {
+      name,
+      iconURL,
+      url,
+    };
   }
 }
