@@ -82,7 +82,7 @@ export class DataAccess {
   }
 
   getSubscriptionName(service: string, channel: string): string {
-    return service + this.SUBSCRIPTION_NAME_DELIMITER + channel;
+    return (service + this.SUBSCRIPTION_NAME_DELIMITER + channel).toLowerCase();
   }
 
   onErrorLog(callback: GenericListener) {
