@@ -75,10 +75,11 @@ export abstract class StreamingService extends BaseService {
     const promises = [];
 
     result.forEach((subscription, j) => {
-      const subscriptionNameLowerCased = this.dataAccess
-        .getSubscriptionName(this.name, subscription.name)
-        .toLowerCase();
-      const subscriptionData = subscriptionsByName[subscriptionNameLowerCased];
+      const subscriptionName = this.dataAccess.getSubscriptionName(
+        this.name,
+        subscription.name
+      );
+      const subscriptionData = subscriptionsByName[subscriptionName];
       const savedData = <Subscription>{};
       const now = Date.now();
       // Don't send notification if last check was too long ago (bot was switched off)
