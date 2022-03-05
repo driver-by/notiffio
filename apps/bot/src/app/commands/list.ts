@@ -2,37 +2,34 @@ import { DataAccess, Subscription } from '../../../../../libs/data-access/src';
 
 export default async function list(command, msg, dataAccess: DataAccess) {
   const serverId = msg.guild.id;
+  const channelId = msg.channel.id;
   const subscriptions: Subscription[] = await dataAccess.getSubscriptionsList(
     serverId
   );
   const map = {};
-  const channelMap = {};
+  const thisChannelKey = 'Оповещения на этом канале:';
+  const otherChannelsKey = 'Оповещения на других каналах:';
   let text = '';
   if (subscriptions?.length) {
-    let promises = [];
     subscriptions.forEach((subscription) => {
-      const promisesToAdd = subscription.servers.map(async (server) => {
-        let promise;
+      subscription.servers.forEach(async (server) => {
         if (serverId === server.serverId) {
           let channelName;
-          if (channelMap[server.channelId]) {
-            channelName = channelMap[server.channelId];
+          if (channelId === server.channelId) {
+            channelName = thisChannelKey;
           } else {
-            promise = msg.client.channels.fetch(server.channelId);
-            const channel = await promise;
-            channelName = channel.name;
-            channelMap[server.channelId] = channelName;
+            channelName = otherChannelsKey;
           }
           map[channelName] = map[channelName] || [];
           map[channelName].push(subscription.name);
-          return promise || Promise.resolve();
         }
       });
-      promises = promises.concat(promisesToAdd);
     });
-    await Promise.all(promises);
-    Object.keys(map).forEach((channelName) => {
-      text += `#${channelName}\n    ` + map[channelName].join(',\n    ') + '\n';
+    [thisChannelKey, otherChannelsKey].forEach((channelName) => {
+      if (map[channelName]) {
+        text +=
+          `${channelName}\n    ` + map[channelName].join(',\n    ') + '\n';
+      }
     });
   }
   if (!text) {
