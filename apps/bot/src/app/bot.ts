@@ -526,13 +526,13 @@ export class Bot {
    * @private
    */
   _getTimeFormatted(timestamp) {
-    const moscowOffset = 180;
+    const moscowOffset = -180;
     if (!timestamp) {
       return '';
     }
     let date = new Date(timestamp);
     const offset = date.getTimezoneOffset();
-    date = dateAndTime.addMilliseconds(date, offset - moscowOffset);
+    date = dateAndTime.addMinutes(date, offset - moscowOffset);
 
     return dateAndTime.format(date, 'HH:mm DD.MM');
   }
