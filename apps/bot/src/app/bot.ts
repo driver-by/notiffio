@@ -532,7 +532,7 @@ export class Bot {
     }
     let date = new Date(timestamp);
     const offset = date.getTimezoneOffset();
-    date = dateAndTime.addMilliseconds(date, moscowOffset - offset);
+    date = dateAndTime.addMilliseconds(date, offset - moscowOffset);
 
     return dateAndTime.format(date, 'HH:mm DD.MM');
   }
