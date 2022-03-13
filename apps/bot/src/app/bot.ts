@@ -176,29 +176,7 @@ export class Bot {
       let msg;
       let embed;
       let messageCustomizable;
-      const s = this.client.guilds.cache.get(server.serverId);
-      if (!s) {
-        this.logger.warn(
-          `Server not found! %s. Removing it from DB`,
-          server.serverId
-        );
-        await this.dataAccess.serverRemove(server.serverId);
-        return;
-      }
-      const channel = <BaseGuildTextChannel>(
-        s.channels.cache.get(server.channelId)
-      );
-      if (!channel) {
-        this.logger.warn(
-          `Channel not found! %s. Removing it from DB`,
-          server.channelId
-        );
-        await this.dataAccess.subscriptionRemoveList(
-          server.serverId,
-          server.channelId
-        );
-        return;
-      }
+
       const isEmbedRemoved = await this.dataAccess.getSettingMessage(
         SettingName.EmbedRemove,
         server.serverId
@@ -456,28 +434,40 @@ export class Bot {
           break;
       }
       if (msg) {
-        this.logger.info(msg);
-        channel
-          .send({ content: msg, embeds: embed ? [embed] : null })
-          .catch((error) => {
-            this.logger.error(
-              `Discord send error ${error.httpStatus} ${server.serverId}/${server.channelId}`
-            );
-            if (error.httpStatus === this.HTTP_PERMISSIONS_ERROR_STATUS) {
-              return this.dataAccess.subscriptionRemoveList(
+        this._sendMessage(server, {
+          content: msg,
+          embeds: embed ? [embed] : null,
+        }).then(
+          (result) => {
+            this.logger.info(msg);
+            if (embed) {
+              this.logger.info(
+                `Embed: ${embed.title} ${embed.fields.reduce(
+                  (acc, val) => `${acc}, ${val.name}: ${val.value}`,
+                  ''
+                )}`
+              );
+            }
+          },
+          (result) => {
+            if (!result.serverFound) {
+              this.logger.warn(
+                `Server not found! %s. Removing it from DB`,
+                server.serverId
+              );
+              this.dataAccess.serverRemove(server.serverId);
+            } else if (!result.channelFound) {
+              this.logger.warn(
+                `Channel not found! %s. Removing it from DB`,
+                server.channelId
+              );
+              this.dataAccess.subscriptionRemoveList(
                 server.serverId,
                 server.channelId
               );
             }
-          });
-        if (embed) {
-          this.logger.info(
-            `${embed.title} ${embed.fields.reduce(
-              (acc, val) => `${acc}, ${val.name}: ${val.value}`,
-              ''
-            )}`
-          );
-        }
+          }
+        );
       }
     });
   }
@@ -578,5 +568,59 @@ export class Bot {
       iconURL,
       url,
     };
+  }
+
+  async _sendMessage(server, message) {
+    return new Promise(async (resolve, reject) => {
+      const data: any = await this._sendMessageSharding(
+        server.serverId,
+        server.channelId,
+        message
+      );
+      if (!data) {
+        reject({});
+        return;
+      }
+      const serverFound = Boolean(data.server);
+      const channelFound = Boolean(data.channel);
+      if (!serverFound || !channelFound) {
+        reject({ serverFound, channelFound });
+      }
+      if (data.httpStatus) {
+        this.logger.error(
+          `Discord send error ${data.httpStatus} ${server.serverId}/${server.channelId}`
+        );
+        if (data.httpStatus === this.HTTP_PERMISSIONS_ERROR_STATUS) {
+          reject({ serverFound, channelFound: false });
+        }
+      }
+      resolve({ serverFound, channelFound });
+    });
+  }
+
+  async _sendMessageSharding(serverId, channelId, message) {
+    const results = await this.client.shard.broadcastEval(
+      async (clientShard, { serverId, channelId, message }) => {
+        const server = clientShard.guilds.cache.get(serverId);
+        if (!server) {
+          return {};
+        }
+        const channel = <BaseGuildTextChannel>(
+          server.channels.cache.get(channelId)
+        );
+        if (!channel) {
+          return { server };
+        }
+        const httpStatus = await channel.send(message).then(
+          () => null,
+          (error) => {
+            return error.httpStatus;
+          }
+        );
+        return { server, channel, httpStatus };
+      },
+      { context: { serverId, channelId, message } }
+    );
+    return results.find((data: any) => data.server) || null;
   }
 }
