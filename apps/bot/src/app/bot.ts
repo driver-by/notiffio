@@ -121,19 +121,19 @@ export class Bot {
   }
 
   _error(error) {
-    this.logger.error(`Discord.js error ${error}`);
+    this.logger.error(`Discord.js error ${JSON.stringify(error)}`);
   }
 
   _rateLimit(event) {
-    this.logger.error(`Discord.js rate limit error ${event}`);
+    this.logger.error(`Discord.js rate limit error ${JSON.stringify(event)}`);
   }
 
   _disconnect(event) {
-    this.logger.error(`Discord.js disconnect ${event}`);
+    this.logger.error(`Discord.js disconnect ${JSON.stringify(event)}`);
   }
 
   _reconnecting(event) {
-    this.logger.info(`Discord.js reconnecting ${event}`);
+    this.logger.info(`Discord.js reconnecting ${JSON.stringify(event)}`);
   }
 
   _guildCreate(server) {
