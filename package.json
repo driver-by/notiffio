@@ -4,8 +4,8 @@
   "description": "Get stream notifications from twitch.tv, goodgame.ru in discord",
   "main": "index.js",
   "scripts": {
-    "start": "nx serve",
-    "build": "nx build",
+    "start": "nx serve sharding",
+    "build": "nx build bot && nx build sharding",
     "test": "nx test"
   },
   "author": "Sergei Tomin",
