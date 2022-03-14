@@ -3,6 +3,7 @@ import { DataAccess } from '../../../../../libs/data-access/src';
 import { SettingName } from '../../../../../libs/data-access/src/lib/setting-name';
 
 const DEFAULT_COMMAND = 'default';
+const SETTING_SAVE_ERROR = `Не удалось сохранить, проверьте название канала`;
 const removeFirstWord = (text) => {
   if (!text) {
     return '';
@@ -33,23 +34,27 @@ export default async function set(command, msg, dataAccess: DataAccess) {
             removeFirstWord(removeFirstWord(command.text))
           );
           const channel = getServiceInfo(command.params[1]);
-          const subscriptionName = dataAccess.getSubscriptionName(
-            channel.service,
-            channel.channel
-          );
-          if (setTextTo === DEFAULT_COMMAND) {
-            result = await dataAccess.removeSettingMessage(
-              setting,
-              msg.guild.id,
-              subscriptionName
+          if (channel?.service && channel?.channel) {
+            const subscriptionName = dataAccess.getSubscriptionName(
+              channel.service,
+              channel.channel
             );
+            if (setTextTo === DEFAULT_COMMAND) {
+              result = await dataAccess.removeSettingMessage(
+                setting,
+                msg.guild.id,
+                subscriptionName
+              );
+            } else {
+              result = await dataAccess.updateSettingMessage(
+                setting,
+                msg.guild.id,
+                setTextTo,
+                subscriptionName
+              );
+            }
           } else {
-            result = await dataAccess.updateSettingMessage(
-              setting,
-              msg.guild.id,
-              setTextTo,
-              subscriptionName
-            );
+            text = SETTING_SAVE_ERROR;
           }
         } else {
           setTextTo = removeFirstWord(removeFirstWord(command.text));
@@ -68,14 +73,18 @@ export default async function set(command, msg, dataAccess: DataAccess) {
         }
         if (setTextTo === DEFAULT_COMMAND) {
           text = `Настройка выставлена по-умолчанию`;
-        } else if (result.modifiedCount > 0) {
+        } else if (
+          result?.modifiedCount > 0 ||
+          result?.upsertedCount > 0 ||
+          result?.matchedCount > 0
+        ) {
           if (setTextTo === '') {
             text = `Сообщение больше показываться не будет (передан пустой текст)`;
           } else {
             text = `Настройка сохранена`;
           }
         } else {
-          text = `Не удалось сохранить, проверьте название канала`;
+          text = SETTING_SAVE_ERROR;
         }
         break;
       case SettingName.EmbedRemove:
