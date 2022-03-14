@@ -477,7 +477,7 @@ export class DataAccess {
 
     const setting = await servers.findOne({ id: serverId });
 
-    return setting?.settings?.[settingName] || undefined;
+    return setting?.settings?.[settingName];
   }
 
   private async serverSubscriptionSettingsGet(
@@ -489,11 +489,9 @@ export class DataAccess {
 
     const setting = await servers.findOne({ id: serverId });
 
-    return (
-      setting?.settingsBySubscription?.[
-        this.getSafeVariableName(subscriptionName)
-      ]?.[settingName] || undefined
-    );
+    return setting?.settingsBySubscription?.[
+      this.getSafeVariableName(subscriptionName)
+    ]?.[settingName];
   }
 
   private getUpdateIntervalIncreasedIfNoStreamingForALongTime(
