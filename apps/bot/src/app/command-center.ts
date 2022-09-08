@@ -2,10 +2,10 @@ import {
   DMChannel,
   Message,
   TextChannel,
-  Permissions,
   NewsChannel,
   ThreadChannel,
   PartialGroupDMChannel,
+  PermissionsBitField,
 } from 'discord.js';
 import { Commands } from './commands';
 import { DataAccess } from '../../../../libs/data-access/src';
@@ -33,8 +33,8 @@ export class CommandCenter {
       channelName = channel.name;
       if (
         !channel
-          .permissionsFor(msg.guild?.me)
-          .has(Permissions.FLAGS.SEND_MESSAGES)
+          .permissionsFor(msg.guild?.members?.me)
+          .has(PermissionsBitField.Flags.SendMessages)
       ) {
         this.logger.error(
           `No SEND_MESSAGES permission ${msg.guild.name}/${channelName}`

@@ -1,8 +1,8 @@
 import {
   BaseGuildTextChannel,
   Client,
-  Intents,
-  MessageEmbed,
+  GatewayIntentBits,
+  EmbedBuilder,
 } from 'discord.js';
 import { CommandCenter } from './command-center';
 import { GoodgameService } from './subscriptions/goodgame';
@@ -68,7 +68,7 @@ export class Bot {
     });
     this.commandCenter = new CommandCenter(this.dataAccess);
     this.client = new Client({
-      intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+      intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
     });
     this.client.on('ready', this._ready.bind(this));
     this.client.on('messageCreate', this._message.bind(this));
@@ -199,7 +199,7 @@ export class Bot {
                 `Заходите на ${params.subscription.url}\n` +
                 `${params.subscription.img}`;
             } else {
-              embed = new MessageEmbed()
+              embed = new EmbedBuilder()
                 .setColor(this.START_COLOR)
                 .setTitle(
                   this._setDefaultTextIfEmpty(params.subscription.title.trim())
@@ -211,11 +211,18 @@ export class Bot {
                     params.subscription.url
                   )
                 )
-                .addField(
-                  'Игра:',
-                  this._setDefaultTextIfEmpty(params.subscription.game)
-                )
-                .addField('Ссылка', params.subscription.url)
+                .addFields([
+                  {
+                    name: 'Игра:',
+                    value: this._setDefaultTextIfEmpty(
+                      params.subscription.game
+                    ),
+                  },
+                  {
+                    name: 'Ссылка',
+                    value: params.subscription.url,
+                  },
+                ])
                 .setImage(this._generateImageLink(params.subscription.img));
             }
           }
@@ -247,7 +254,7 @@ export class Bot {
                 `\n**${params.subscription.title.trim()}**\n` +
                 `*${params.subscription.game}*\n`;
             } else {
-              embed = new MessageEmbed()
+              embed = new EmbedBuilder()
                 .setColor(this.START_COLOR)
                 .setTitle(
                   this._setDefaultTextIfEmpty(params.subscription.title.trim())
@@ -259,11 +266,18 @@ export class Bot {
                     params.subscription.url
                   )
                 )
-                .addField(
-                  'Игра:',
-                  this._setDefaultTextIfEmpty(params.subscription.game)
-                )
-                .addField('Ссылка', params.subscription.url);
+                .addFields([
+                  {
+                    name: 'Игра:',
+                    value: this._setDefaultTextIfEmpty(
+                      params.subscription.game
+                    ),
+                  },
+                  {
+                    name: 'Ссылка',
+                    value: params.subscription.url,
+                  },
+                ]);
             }
           }
           break;
@@ -290,7 +304,7 @@ export class Bot {
                 `${this._getTimeElapsedText(params.broadcast.start)}\n` +
                 `${params.subscription.img}`;
             } else {
-              embed = new MessageEmbed()
+              embed = new EmbedBuilder()
                 .setColor(this.ANNOUNCEMENT_COLOR)
                 .setTitle(
                   this._setDefaultTextIfEmpty(params.broadcast.title.trim())
@@ -302,17 +316,24 @@ export class Bot {
                     params.subscription.url
                   )
                 )
-                .addField(
-                  'Начало:',
-                  `${this._getTimeFormatted(
-                    params.broadcast.start
-                  )} (мск)${this._getTimeElapsedText(params.broadcast.start)}`
-                )
-                .addField(
-                  'Игра:',
-                  this._setDefaultTextIfEmpty(params.broadcast.game)
-                )
-                .addField('Ссылка', params.subscription.url)
+                .addFields([
+                  {
+                    name: 'Начало:',
+                    value: `${this._getTimeFormatted(
+                      params.broadcast.start
+                    )} (мск)${this._getTimeElapsedText(
+                      params.broadcast.start
+                    )}`,
+                  },
+                  {
+                    name: 'Игра:',
+                    value: this._setDefaultTextIfEmpty(params.broadcast.game),
+                  },
+                  {
+                    name: 'Ссылка',
+                    value: params.subscription.url,
+                  },
+                ])
                 .setImage(this._generateImageLink(params.subscription.img));
             }
           }
@@ -351,7 +372,7 @@ export class Bot {
                   `${this._getTimeElapsedText(params.broadcast.start)}\n`;
               }
             } else {
-              embed = new MessageEmbed()
+              embed = new EmbedBuilder()
                 .setColor(this.ANNOUNCEMENT_COLOR)
                 .setTitle(
                   this._setDefaultTextIfEmpty(params.broadcast.title.trim())
@@ -364,34 +385,55 @@ export class Bot {
                   )
                 );
               if (params.broadcast.start !== params.broadcastPrevious.start) {
-                embed.addField(
-                  'Начало:',
-                  `~~${this._getTimeFormatted(
-                    params.broadcastPrevious.start
-                  )}~~ ` +
-                    `${this._getTimeFormatted(params.broadcast.start)} (мск)` +
-                    `${this._getTimeElapsedText(params.broadcast.start)}`
-                );
+                embed.addFields([
+                  {
+                    name: 'Начало:',
+                    value:
+                      `~~${this._getTimeFormatted(
+                        params.broadcastPrevious.start
+                      )}~~ ` +
+                      `${this._getTimeFormatted(
+                        params.broadcast.start
+                      )} (мск)` +
+                      `${this._getTimeElapsedText(params.broadcast.start)}`,
+                  },
+                ]);
               } else {
-                embed.addField(
-                  'Начало:',
-                  `${this._getTimeFormatted(params.broadcast.start)} (мск)` +
-                    `${this._getTimeElapsedText(params.broadcast.start)}`
-                );
+                embed.addFields([
+                  {
+                    name: 'Начало:',
+                    value:
+                      `${this._getTimeFormatted(
+                        params.broadcast.start
+                      )} (мск)` +
+                      `${this._getTimeElapsedText(params.broadcast.start)}`,
+                  },
+                ]);
               }
               if (params.broadcast.game !== params.broadcastPrevious.game) {
-                embed.addField(
-                  'Игра:',
-                  `~~${params.broadcastPrevious.game}~~ **${params.broadcast.game}**`
-                );
+                embed.addFields([
+                  {
+                    name: 'Игра:',
+                    value: `~~${params.broadcastPrevious.game}~~ **${params.broadcast.game}**`,
+                  },
+                ]);
               } else {
-                embed.addField(
-                  'Игра:',
-                  this._setDefaultTextIfEmpty(`**${params.broadcast.game}**`)
-                );
+                embed.addFields([
+                  {
+                    name: 'Игра:',
+                    value: this._setDefaultTextIfEmpty(
+                      `**${params.broadcast.game}**`
+                    ),
+                  },
+                ]);
               }
               embed
-                .addField('Ссылка', params.subscription.url)
+                .addFields([
+                  {
+                    name: 'Ссылка',
+                    value: params.subscription.url,
+                  },
+                ])
                 .setImage(this._generateImageLink(params.subscription.img));
             }
           }
@@ -411,7 +453,7 @@ export class Bot {
                 `\n**${params.broadcastPrevious.title.trim()}** ` +
                 `(*${params.broadcastPrevious.game}*)`;
             } else {
-              embed = new MessageEmbed()
+              embed = new EmbedBuilder()
                 .setColor(this.STOP_COLOR)
                 .setTitle(
                   this._setDefaultTextIfEmpty(
@@ -425,10 +467,14 @@ export class Bot {
                     params.subscription.url
                   )
                 )
-                .addField(
-                  'Игра:',
-                  this._setDefaultTextIfEmpty(params.broadcastPrevious.game)
-                );
+                .addFields([
+                  {
+                    name: 'Игра:',
+                    value: this._setDefaultTextIfEmpty(
+                      params.broadcastPrevious.game
+                    ),
+                  },
+                ]);
             }
           }
           break;
