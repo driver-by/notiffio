@@ -1,9 +1,12 @@
 import { ShardingManager, ShardingManagerOptions } from 'discord.js';
 import 'dotenv/config';
 import { getLogger } from '../../../libs/logger/src';
+import { CommandController } from '../../../libs/commands/src';
 
+const SECRET_KEY = process.env.SECRET_KEY;
+const CLIENT_ID = process.env.CLIENT_ID;
 const options: ShardingManagerOptions = {
-  token: process.env.SECRET_KEY,
+  token: SECRET_KEY,
 };
 if (process.env.TOTAL_SHARDS) {
   options.totalShards = <number | 'auto'>process.env.TOTAL_SHARDS;
@@ -29,3 +32,9 @@ manager.on('shardCreate', (shard) => {
 });
 
 manager.spawn();
+
+const commandController = new CommandController();
+commandController.registerCommands(CLIENT_ID, SECRET_KEY).then(
+  (registered) => logger.info(`Commands registered`),
+  (error) => logger.error(`Commands registration error`)
+);
