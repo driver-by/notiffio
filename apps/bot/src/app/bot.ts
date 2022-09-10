@@ -26,6 +26,7 @@ import { DataAccess } from '../../../../libs/data-access/src';
 import { SettingName } from '../../../../libs/data-access/src/lib/setting-name';
 import Timeout = NodeJS.Timeout;
 import { getLogger } from '../../../../libs/logger/src';
+import { CommandController } from '../../../../libs/commands/src';
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -39,6 +40,7 @@ export class Bot {
   private dataAccess: DataAccess;
   private client: Client;
   private commandCenter: CommandCenter;
+  private commandController: CommandController;
   private services: Array<BaseService>;
   private logger: Logger;
   private interval: Timeout;
@@ -70,6 +72,8 @@ export class Bot {
     this.client = new Client({
       intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
     });
+    this.commandController = new CommandController();
+    this.commandController.registerInteractions(this.client, this.dataAccess);
     this.client.on('ready', this._ready.bind(this));
     this.client.on('messageCreate', this._message.bind(this));
     this.client.on('error', this._error.bind(this));
