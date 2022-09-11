@@ -490,7 +490,7 @@ export class Bot {
         }).then(
           (result) => {
             this.logger.info(msg);
-            if (embed) {
+            if (embed?.fields) {
               this.logger.info(
                 `Embed: ${embed.title} ${embed.fields.reduce(
                   (acc, val) => `${acc}, ${val.name}: ${val.value}`,
@@ -664,7 +664,7 @@ export class Bot {
         const httpStatus = await channel.send(message).then(
           () => null,
           (error) => {
-            return error.httpStatus;
+            return error.status;
           }
         );
         return { server, channel, httpStatus };
