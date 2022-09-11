@@ -5,9 +5,11 @@ import { ListCommand } from './commands/list';
 import { Command } from './models/command';
 import { getLogger } from '../../../logger/src';
 import { Logger } from 'winston';
+import { UnsubscribeCommand } from './commands/unsubscribe';
+import { SubscribeCommand } from './commands/subscribe';
 
 export class CommandController {
-  private commandClasses = [ListCommand];
+  private commandClasses = [ListCommand, SubscribeCommand, UnsubscribeCommand];
   private commandsGenerated: Command[];
   private client: Client;
   private dataAccess: DataAccess;
@@ -20,7 +22,10 @@ export class CommandController {
   registerCommands(clientId: string, token: string) {
     const body = this.commands.map((command) => command.getCommand().toJSON());
     const rest = new REST({ version: '10' }).setToken(token);
-    return rest.put(Routes.applicationCommands(clientId), { body });
+    // Clear commands first (send empty array)
+    return rest
+      .put(Routes.applicationCommands(clientId), { body: [] })
+      .then(() => rest.put(Routes.applicationCommands(clientId), { body }));
   }
 
   registerInteractions(client: Client, dataAccess: DataAccess) {

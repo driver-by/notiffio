@@ -2,6 +2,7 @@ import { CommandInteraction, SlashCommandBuilder } from 'discord.js';
 import { DataAccess, Subscription } from '../../../../data-access/src';
 import { Command } from '../models/command';
 import { CommandReply } from '../models/command-reply';
+import { getServiceUrl } from '../../../../../apps/bot/src/app/services/helper';
 
 export class ListCommand implements Command {
   name = 'list';
@@ -42,7 +43,9 @@ export class ListCommand implements Command {
               channelName = otherChannelsKey;
             }
             map[channelName] = map[channelName] || [];
-            map[channelName].push(subscription.name);
+            map[channelName].push(
+              `${subscription.name} (${getServiceUrl(subscription)})`
+            );
           }
         });
       });

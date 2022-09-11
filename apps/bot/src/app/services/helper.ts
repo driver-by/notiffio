@@ -25,3 +25,14 @@ export function getServiceInfo(url) {
 
   return { service, channel };
 }
+
+export function getServiceUrl({ service, channel }) {
+  switch (service) {
+    case 'goodgame.ru':
+      return `https://goodgame.ru/channel/${channel}`;
+    case 'twitch.tv':
+      return `https://www.twitch.tv/${channel}`;
+    default:
+      throw new Error(`Wrong service ${service} in \`getServiceUrl\` function`);
+  }
+}
