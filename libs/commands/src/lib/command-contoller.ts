@@ -60,7 +60,7 @@ export class CommandController {
       const result = await command.processCommand(interaction);
       if (result?.text) {
         this.logger.info(
-          `Command '${command.name}' => "${result}"` +
+          `Command '${command.name}' => "${result.text}"` +
             `<${interaction.guild.id}/${interaction.guild.name}--${interaction.channel.id}/${interaction.channel.name}>`
         );
       }
