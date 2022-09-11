@@ -7,9 +7,15 @@ import { getLogger } from '../../../logger/src';
 import { Logger } from 'winston';
 import { UnsubscribeCommand } from './commands/unsubscribe';
 import { SubscribeCommand } from './commands/subscribe';
+import { SettingsCommand } from './commands/settings';
 
 export class CommandController {
-  private commandClasses = [ListCommand, SubscribeCommand, UnsubscribeCommand];
+  private commandClasses = [
+    ListCommand,
+    SubscribeCommand,
+    UnsubscribeCommand,
+    SettingsCommand,
+  ];
   private commandsGenerated: Command[];
   private client: Client;
   private dataAccess: DataAccess;
