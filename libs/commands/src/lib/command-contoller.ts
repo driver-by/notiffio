@@ -57,7 +57,13 @@ export class CommandController {
     const { commandName } = interaction;
     const command = this.commands.find((c) => c.name === commandName);
     if (command) {
-      return command.processCommand(interaction);
+      const result = await command.processCommand(interaction);
+      if (result?.text) {
+        this.logger.info(
+          `Command '${command.name}' => "${result}"` +
+            `<${interaction.guild.id}/${interaction.guild.name}--${interaction.channel.id}/${interaction.channel.name}>`
+        );
+      }
     } else {
       this.logger.error(`Command "${commandName}" not found`);
     }
