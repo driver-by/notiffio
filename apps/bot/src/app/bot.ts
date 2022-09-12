@@ -471,7 +471,7 @@ export class Bot {
           embeds: embed ? [embed] : null,
         }).then(
           (result) => {
-            this.logger.info(msg);
+            this.logger.info(`[${this.client.shard.ids.join(',')}] ${msg}`);
             if (embed?.fields) {
               this.logger.info(
                 `Embed: ${embed.title} ${embed.fields.reduce(
