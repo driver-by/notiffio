@@ -1,6 +1,6 @@
 ## Notiffio
 
-Discord bot, sending notifications to selected channels on different events, using [discord.js](https://github.com/discordjs). Currently supports:
+Discord bot, sending notifications (only Russian l10n for now) to selected channels on different events, using [discord.js](https://github.com/discordjs). Currently supports:
 - goodgame.ru stream start/stop
 - goodgame.ru announcement add/edit/remove
 - twitch.tv stream start/stop
@@ -9,22 +9,25 @@ Discord bot, sending notifications to selected channels on different events, usi
 
 ##### Add to your server with [a link](https://discordapp.com/oauth2/authorize?&client_id=552560239304507403&scope=bot&permissions=256064)
 
-Use commands to start:
-- **!notify help** - show help
-- **!notify {channel URL}** - add notification or remove if already in the list
-- **!notify list** - list of all notifications on a server
-- **!notify remove** - remove all notifications from current channel
-- **!notify remove all** - remove all notifications from entire server
-- **!notify set** - show help for settings (set) command
-- **!notify leave** - kick bot out of a server
+Use slash commands to start:
+- **/notify help** - show help
+- **/subscribe {channel URL}** - add notification for twitch/goodgame channel
+- **/list** - list of all notifications on a server
+- **/unsubscribe {channel URL}** - remove notification
+- **/settings help** - show help for settings command
 
 ### Self-host this bot
+Requirements:
+- Mongo DB
+- Node.js (npm)
 
+Setup:
 - Register you bot on [discord developers portal](https://discordapp.com/developers/applications)
 - Download the source code
 - Run `npm install` or `npm ci`
 - Add `.env` file to pass ENV params 
-  + `SECRET_KEY` with token you can find in your Bot settings on [dev portal](https://discord.com/developers/applications) under `Bot` - `Token`
+  + `SECRET_KEY` token from Bot settings on [dev portal](https://discord.com/developers/applications) under `Bot` - `Token`
+  + `CLIENT_ID` client id from Bot General Information on [dev portal](https://discord.com/developers/applications) under `General` - `Application ID`
   + `TWITCH_CLIENT_ID` with Twitch API Client ID (visit [dev console](https://dev.twitch.tv/console/apps/create) to register)
   + `TWITCH_SECRET` with Twitch API secret code
   + `MONGO_URL` Mongo DB connection URL `mongodb://...`
