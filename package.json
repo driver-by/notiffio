@@ -1,6 +1,6 @@
 {
   "name": "notiffio",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Get stream notifications from twitch.tv, goodgame.ru in discord",
   "main": "index.js",
   "scripts": {
