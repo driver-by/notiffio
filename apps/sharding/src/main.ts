@@ -9,7 +9,7 @@ const options: ShardingManagerOptions = {
   token: SECRET_KEY,
 };
 if (process.env.TOTAL_SHARDS) {
-  options.totalShards = <number | 'auto'>process.env.TOTAL_SHARDS;
+  options.totalShards = parseInt(process.env.TOTAL_SHARDS) || 1;
 }
 const manager = new ShardingManager(`${__dirname}/../bot/main.js`, options);
 
