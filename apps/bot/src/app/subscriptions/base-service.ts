@@ -17,7 +17,7 @@ export abstract class BaseService {
     return;
   }
 
-  async update() {}
+  async update(shardIds: number[]) {}
 
   /**
    * Subscribe callback to event by name

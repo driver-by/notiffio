@@ -138,7 +138,9 @@ export class Bot {
       return;
     }
     this.updateSubscriptionsInProgress = true;
-    this.services.forEach((service) => promises.push(service.update()));
+    this.services.forEach((service) =>
+      promises.push(service.update(this.client.shard.ids))
+    );
     Promise.all(promises).finally(
       () => (this.updateSubscriptionsInProgress = false)
     );
