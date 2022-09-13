@@ -1,6 +1,6 @@
 {
   "name": "notiffio",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Get stream notifications from twitch.tv, goodgame.ru in discord",
   "main": "index.js",
   "scripts": {
@@ -26,6 +26,7 @@
     "winston": "3.8.2"
   },
   "devDependencies": {
+    "@discordjs/rest": "^1.1.0",
     "@nrwl/cli": "^14.6.5",
     "@nrwl/eslint-plugin-nx": "14.6.5",
     "@nrwl/jest": "14.6.5",
@@ -42,7 +43,7 @@
     "jest-environment-jsdom": "28.1.1",
     "nodemon": "^2.0.19",
     "nx": "^14.7.3",
-    "ts-jest": "28.0.5",
+    "ts-jest": "^29.0.0",
     "ts-node": "10.9.1"
   }
 }
