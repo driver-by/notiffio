@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": "./notiffio",
     "paths": {
+      "@notiffio/commands": ["libs/commands/src/index.ts"],
       "@notiffio/data-access": ["libs/data-access/src/index.ts"],
       "@notiffio/logger": ["libs/logger/src/index.ts"]
     }

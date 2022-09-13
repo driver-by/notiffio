@@ -342,10 +342,7 @@ export class DataAccess {
     await this.removeSubscriptionsWithNoServers();
   }
 
-  async updateSubscription(
-    subscriptionName: string,
-    subscription: Subscription
-  ) {
+  async updateSubscription(subscriptionName: string, subscription: any) {
     const subscriptions = this.db.collection<Subscription>(
       Collection.Subscriptions
     );

@@ -52,6 +52,29 @@
         }
       }
     },
+    "commands": {
+      "root": "libs/commands",
+      "sourceRoot": "libs/commands/src",
+      "projectType": "library",
+      "targets": {
+        "lint": {
+          "executor": "@nrwl/linter:eslint",
+          "outputs": ["{options.outputFile}"],
+          "options": {
+            "lintFilePatterns": ["libs/commands/**/*.ts"]
+          }
+        },
+        "test": {
+          "executor": "@nrwl/jest:jest",
+          "outputs": ["coverage/libs/commands"],
+          "options": {
+            "jestConfig": "libs/commands/jest.config.ts",
+            "passWithNoTests": true
+          }
+        }
+      },
+      "tags": []
+    },
     "data-access": {
       "root": "libs/data-access",
       "sourceRoot": "libs/data-access/src",

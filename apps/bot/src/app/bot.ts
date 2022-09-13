@@ -4,7 +4,6 @@ import {
   GatewayIntentBits,
   EmbedBuilder,
 } from 'discord.js';
-import { CommandCenter } from './command-center';
 import { GoodgameService } from './subscriptions/goodgame';
 import { TwitchService } from './subscriptions/twitch';
 import { StreamingServiceConfig } from './subscriptions/streaming-service';
@@ -26,6 +25,7 @@ import { DataAccess } from '../../../../libs/data-access/src';
 import { SettingName } from '../../../../libs/data-access/src/lib/setting-name';
 import Timeout = NodeJS.Timeout;
 import { getLogger } from '../../../../libs/logger/src';
+import { CommandController } from '../../../../libs/commands/src';
 
 const SECRET_KEY = process.env.SECRET_KEY;
 
@@ -38,7 +38,7 @@ export class Bot {
 
   private dataAccess: DataAccess;
   private client: Client;
-  private commandCenter: CommandCenter;
+  private commandController: CommandController;
   private services: Array<BaseService>;
   private logger: Logger;
   private interval: Timeout;
@@ -66,12 +66,12 @@ export class Bot {
     this.dataAccess.onErrorLog((error) => {
       this.logger.error('DB error');
     });
-    this.commandCenter = new CommandCenter(this.dataAccess);
     this.client = new Client({
       intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
     });
+    this.commandController = new CommandController();
+    this.commandController.registerInteractions(this.client, this.dataAccess);
     this.client.on('ready', this._ready.bind(this));
-    this.client.on('messageCreate', this._message.bind(this));
     this.client.on('error', this._error.bind(this));
     this.client.on('rateLimit', this._rateLimit.bind(this));
     this.client.on('shardDisconnected', this._disconnect.bind(this));
@@ -100,20 +100,6 @@ export class Bot {
     return {
       UPDATE_INTERVAL: process.env.UPDATE_INTERVAL,
     };
-  }
-
-  _message(msg) {
-    this._processCommand(msg);
-  }
-
-  _processCommand(msg) {
-    const result = this.commandCenter.process(msg);
-    if (result) {
-      this.logger.info(
-        `Command '${msg.content}' => "${result}"` +
-          `<${msg.guild.id}/${msg.guild.name}--${msg.channel.id}/${msg.channel.name}>`
-      );
-    }
   }
 
   _ready() {
@@ -486,7 +472,7 @@ export class Bot {
         }).then(
           (result) => {
             this.logger.info(`[${this.client.shard.ids.join(',')}] ${msg}`);
-            if (embed) {
+            if (embed?.fields) {
               this.logger.info(
                 `Embed: ${embed.title} ${embed.fields.reduce(
                   (acc, val) => `${acc}, ${val.name}: ${val.value}`,
@@ -660,7 +646,7 @@ export class Bot {
         const httpStatus = await channel.send(message).then(
           () => null,
           (error) => {
-            return error.httpStatus;
+            return error.status;
           }
         );
         return { server, channel, httpStatus };
