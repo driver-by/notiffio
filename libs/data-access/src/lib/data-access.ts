@@ -37,6 +37,7 @@ export interface Subscription {
   broadcasts: Broadcast[];
   notFoundTimes: number;
   lastCheckStarted: number;
+  lastCheckStartedBy: string;
   additionalInfo: any;
 }
 
@@ -249,12 +250,17 @@ export class DataAccess {
 
   async subscriptionsGetByLastCheckAndUpdate(
     updateInterval: number,
-    service: string
+    service: string,
+    shardIds: number[]
   ): Promise<Subscription[]> {
     const subscriptions = this.db.collection<Subscription>(
       Collection.Subscriptions
     );
-    const subs = await subscriptions.find(
+    const lastCheckStartedBy = shardIds.join('-');
+    const lastCheckStarted = Date.now();
+    // Update to mark entries as "update is already in progress".
+    // Otherwise, few shards could start to check it simultaneously, resulting in duplicated notifications
+    await subscriptions.updateMany(
       {
         service,
         // lastCheckStarted empty or earlier than update interval (checking process dropped for some reason?)
@@ -292,10 +298,25 @@ export class DataAccess {
         ],
       },
       {
+        $set: {
+          lastCheckStarted,
+          lastCheckStartedBy,
+        },
+      }
+    );
+    // Now get all these records marked for check
+    const subs = subscriptions.find(
+      {
+        service,
+        lastCheckStarted,
+        lastCheckStartedBy,
+      },
+      {
         sort: { lastCheck: 1 },
       }
     );
     const result = [];
+    const skipCheckFor = [];
     await subs.forEach((subscription) => {
       const updateIntervalIncreasedIfNoStreamingForALongTime =
         this.getUpdateIntervalIncreasedIfNoStreamingForALongTime(
@@ -308,13 +329,16 @@ export class DataAccess {
           Date.now() - updateIntervalIncreasedIfNoStreamingForALongTime
       ) {
         result.push(subscription);
+      } else {
+        skipCheckFor.push(subscription);
       }
     });
+    await this.unsetLastCheck(skipCheckFor);
 
     return result;
   }
 
-  async setLastCheckStartedToNow(subscriptionsData: Subscription[]) {
+  async unsetLastCheck(subscriptionsData: Subscription[]) {
     if (!subscriptionsData?.length) {
       return;
     }
@@ -324,7 +348,7 @@ export class DataAccess {
     const subscriptionsNames = subscriptionsData.map((s) => s.name);
     return await subscriptions.updateMany(
       { name: { $in: subscriptionsNames } },
-      { $set: { lastCheckStarted: Date.now() } }
+      { $set: { lastCheckStarted: null, lastCheckStartedBy: null } }
     );
   }
 
