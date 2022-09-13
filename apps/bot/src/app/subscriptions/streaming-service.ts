@@ -46,18 +46,17 @@ export abstract class StreamingService extends BaseService {
     return;
   }
 
-  async update() {
+  async update(shardIds: number[]) {
     const subscriptionsToCheck =
       await this.dataAccess.subscriptionsGetByLastCheckAndUpdate(
         this.UPDATE_INTERVAL,
-        this.name
+        this.name,
+        shardIds
       );
 
     if (!subscriptionsToCheck || !subscriptionsToCheck.length) {
       return;
     }
-
-    await this.dataAccess.setLastCheckStartedToNow(subscriptionsToCheck);
 
     return this.getChannelStatuses(subscriptionsToCheck).then(
       this.processChannelStatuses.bind(this, subscriptionsToCheck),
