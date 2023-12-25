@@ -1,10 +1,13 @@
-export function getServiceInfo(url) {
+import axios from 'axios';
+import { getLogger } from '../../../../../libs/logger/src';
+
+export async function getServiceInfo(url) {
   if (!url) {
     return null;
   }
 
   const match = url.match(
-    /^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(\w*\.\w*)\/([\w-_.]*)\/?([\w-_.]*)\/?/i
+    /^(?:https?:\/\/)?(?:www\.)?(?:m\.)?(\w*\.\w*)\/([\w\-_.%]*)\/?([\w\-_.%]*)\/?/i
   );
   if (!match) {
     return null;
@@ -17,7 +20,17 @@ export function getServiceInfo(url) {
         // Old way of links
         channel = param2;
       } else {
-        channel = param1;
+        // We have to look for the channel name via API
+        try {
+          const result = await axios.get(
+            `https://goodgame.ru/api/4/users/${param1}/stream`
+          );
+          channel = result?.data?.channelkey;
+        } catch (e) {
+          const logger = getLogger();
+          logger.error(`getServiceInfo(${url}) axios error: ${e}`);
+          channel = null;
+        }
       }
       break;
     case 'twitch.tv':

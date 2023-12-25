@@ -87,6 +87,7 @@ export class TwitchService extends StreamingService {
                 .replace('{height}', 180)
             : null,
           url: `https://twitch.tv/${user.name}`,
+          service: this.name,
         });
       });
 
