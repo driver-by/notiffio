@@ -172,7 +172,6 @@ export class Bot {
       switch (eventName) {
         case EVENT_GO_LIVE:
           messageCustomizable = await this._getMessage(
-            params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
             SettingName.StreamStart,
@@ -217,7 +216,6 @@ export class Bot {
           break;
         case EVENT_GO_OFFLINE:
           messageCustomizable = await this._getMessage(
-            params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
             SettingName.StreamStop,
@@ -229,7 +227,6 @@ export class Bot {
           break;
         case EVENT_GO_LIVE_AGAIN:
           messageCustomizable = await this._getMessage(
-            params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
             SettingName.StreamProceed,
@@ -274,7 +271,6 @@ export class Bot {
           break;
         case EVENT_BROADCAST_ADD:
           messageCustomizable = await this._getMessage(
-            params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
             SettingName.AnnouncementAdd,
@@ -328,7 +324,6 @@ export class Bot {
           break;
         case EVENT_BROADCAST_CHANGE:
           messageCustomizable = await this._getMessage(
-            params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
             SettingName.AnnouncementEdit,
@@ -428,7 +423,6 @@ export class Bot {
           break;
         case EVENT_BROADCAST_REMOVE:
           messageCustomizable = await this._getMessage(
-            params.subscription.url,
             server.serverId,
             this._getDataForMessage(params),
             SettingName.AnnouncementRemove,
@@ -506,12 +500,14 @@ export class Bot {
     });
   }
 
-  async _getMessage(url, serverId, data, setting, defaultMessage) {
-    const channel = getServiceInfo(url);
+  async _getMessage(serverId, data, setting, defaultMessage) {
     let message = await this.dataAccess.getSettingMessage(
       setting,
       serverId,
-      this.dataAccess.getSubscriptionName(channel.service, channel.channel)
+      this.dataAccess.getSubscriptionName(
+        data.subscription.service,
+        data.subscription.name
+      )
     );
     if (message === undefined || message === null) {
       message = defaultMessage;

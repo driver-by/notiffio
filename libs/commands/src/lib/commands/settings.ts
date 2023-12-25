@@ -144,7 +144,7 @@ export class SettingsCommand implements Command {
       case this.subcommandText:
       case this.subcommandTextForSubscription:
         if (httpAddress) {
-          const channel = getServiceInfo(httpAddress);
+          const channel = await getServiceInfo(httpAddress);
           if (channel?.service && channel?.channel) {
             const subscriptionName = this.dataAccess.getSubscriptionName(
               channel.service,
@@ -170,7 +170,7 @@ export class SettingsCommand implements Command {
       case this.subcommandSetDefault:
       case this.subcommandSetDefaultForSubscription:
         if (httpAddress) {
-          const channel = getServiceInfo(httpAddress);
+          const channel = await getServiceInfo(httpAddress);
           if (channel?.service && channel?.channel) {
             const subscriptionName = this.dataAccess.getSubscriptionName(
               channel.service,

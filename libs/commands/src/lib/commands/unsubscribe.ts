@@ -40,7 +40,7 @@ export class UnsubscribeCommand implements Command {
                 "Channel's web address (example: https://www.twitch.tv/ninja)"
               )
               .setDescriptionLocalizations({
-                ru: 'Веб адрес канала (примеры: https://www.twitch.tv/ninja, https://goodgame.ru/channel/Miker)',
+                ru: 'Веб адрес канала (примеры: https://www.twitch.tv/ninja, https://goodgame.ru/Miker)',
               })
               .setRequired(true)
           )
@@ -70,7 +70,7 @@ export class UnsubscribeCommand implements Command {
 
     await interaction.deferReply({ ephemeral: true });
 
-    const subscribeTo = getServiceInfo(
+    const subscribeTo = await getServiceInfo(
       interaction.options.getString(this.optionHttpAddress)
     );
     if (subscribeTo?.channel) {
