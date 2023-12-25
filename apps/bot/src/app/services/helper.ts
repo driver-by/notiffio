@@ -13,7 +13,12 @@ export function getServiceInfo(url) {
   let channel;
   switch (service) {
     case 'goodgame.ru':
-      channel = param2;
+      if (param1 === 'channel') {
+        // Old way of links
+        channel = param2;
+      } else {
+        channel = param1;
+      }
       break;
     case 'twitch.tv':
       channel = param1;
