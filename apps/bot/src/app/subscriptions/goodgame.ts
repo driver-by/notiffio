@@ -65,6 +65,7 @@ export class GoodgameService extends StreamingService {
           img: channelData.poster,
           url: channelData.link,
           broadcast: channelData.broadcast,
+          service: this.name,
         });
       });
 
