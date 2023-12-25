@@ -211,7 +211,7 @@ export abstract class StreamingService extends BaseService {
   }
 
   protected broadcastEquals(b1, b2) {
-    return b1.start === b2.start || b1.title === b2.title;
+    return b1 && b2 && (b1.start === b2.start || b1.title === b2.title);
   }
 
   protected removeOldBroadcasts(broadcasts) {
