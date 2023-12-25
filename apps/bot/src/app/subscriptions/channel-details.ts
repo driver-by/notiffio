@@ -13,4 +13,5 @@ export interface ChannelDetails {
   url: string;
   broadcast: string;
   avatar: string;
+  service: string;
 }
