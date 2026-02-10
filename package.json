@@ -15,7 +15,7 @@
     "@twurple/auth": "^5.2.3",
     "@types/date-and-time": "^0.13.0",
     "@types/node": "18.7.16",
-    "axios": "0.27.2",
+    "axios": "1.13.5",
     "date-and-time": "^2.4.1",
     "discord.js": "14.3.0",
     "dotenv": "^16.0.2",
