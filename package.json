@@ -40,7 +40,7 @@
     "eslint": "8.23.0",
     "eslint-config-prettier": "8.5.0",
     "jest": "29.0.2",
-    "jest-environment-jsdom": "28.1.1",
+    "jest-environment-jsdom": "30.2.0",
     "nodemon": "^2.0.19",
     "nx": "^14.7.3",
     "ts-jest": "^29.0.0",
