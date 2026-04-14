@@ -7,15 +7,6 @@ Discord bot, sending notifications (only Russian l10n for now) to selected chann
 
 ### Start to use the bot
 
-##### Add to your server with [a link](https://discordapp.com/oauth2/authorize?&client_id=552560239304507403&scope=bot&permissions=256064)
-
-Use slash commands to start:
-- **/notify help** - show help
-- **/subscribe {channel URL}** - add notification for twitch/goodgame channel
-- **/list** - list of all notifications on a server
-- **/unsubscribe {channel URL}** - remove notification
-- **/settings help** - show help for settings command
-
 ### Self-host this bot
 Requirements:
 - Mongo DB
@@ -40,3 +31,11 @@ Setup:
 - Enjoy 🤖
 
 Node v16+ is required.
+
+
+Use slash commands when the bot is online:
+- **/notify help** - show help
+- **/subscribe {channel URL}** - add notification for twitch/goodgame channel
+- **/list** - list of all notifications on a server
+- **/unsubscribe {channel URL}** - remove notification
+- **/settings help** - show help for settings command
